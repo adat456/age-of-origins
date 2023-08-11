@@ -4,7 +4,7 @@ const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
 const AnnouncementModel = require("../models/announcementSchema");
 
-router.get("/get-members", async function(req, res, next) {
+router.get("/fetch-members", async function(req, res, next) {
   try {
     const allMembers = await MemberModel.find({});
     res.status(200).json(allMembers);

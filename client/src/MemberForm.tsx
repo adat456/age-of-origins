@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchMembers, createMember } from "./sharedFunctions";
 
 const MemberForm: React.FC = function() {
     const [ username, setUsername ] = useState("");
@@ -7,26 +8,12 @@ const MemberForm: React.FC = function() {
     const [ firstname, setFirstname ] = useState("");
 
     const queryClient = useQueryClient();
+    const { data: membersData } = useQuery({
+        queryKey: [ "members" ],
+        queryFn: fetchMembers
+    });
     const { mutate: addMember, status: addMemberStatus, error: addMemberError, data: addMemberData } = useMutation({
-        mutationFn: async (memberData: { username: string, firstname: string }) => {
-            const reqOptions: RequestInit = {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(memberData),
-            };
-            const req = await fetch("http://localhost:3001/create-member", reqOptions);
-            const res = await req.json();
-            
-            if (!req.ok) {
-                if (res.code) {
-                    if (res.code === 11000) throw new Error("Duplicate username found. Please enter a different username.");
-                } else {
-                    throw new Error("Unable to add user: ", res);
-                };
-            };
-
-            return res;
-        },
+        mutationFn: (memberData: { username: string, firstname: string }) => createMember(memberData),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [ "members" ]})
             resetAllInputsAndErrs();
@@ -36,10 +23,18 @@ const MemberForm: React.FC = function() {
     function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const usernameInput = e.target as HTMLInputElement;
         setUsername(usernameInput.value);
-        if (usernameInput.value.trim() === "") {
+
+        // check that trimmed username is not am empty string and that there are no duplicate usernames
+        const trimmedUsername = usernameInput.value.trim();
+        if (trimmedUsername === "") {
             setUsernameErrMsg("Required, must not include whitespace.");
         } else {
-            setUsernameErrMsg("");
+            const matchingUsername = membersData?.find(existingMember => existingMember.username.toLowerCase() === trimmedUsername.toLowerCase());
+            if (matchingUsername) {
+                setUsernameErrMsg("This username already exists. Please enter a different username.");
+            } else {
+                setUsernameErrMsg("");
+            };
         };
     };
 
@@ -49,7 +44,7 @@ const MemberForm: React.FC = function() {
         const trimmedUsername = username.trim();
         const trimmedFirstname = firstname.trim();
 
-        if (trimmedUsername && addMemberStatus !== "loading") {
+        if (!usernameErrMsg && addMemberStatus !== "loading") {
             addMember({ username: trimmedUsername, firstname: trimmedFirstname });
         };
     };
@@ -59,12 +54,6 @@ const MemberForm: React.FC = function() {
         setFirstname("");
         setUsernameErrMsg("");
     };
-
-    useEffect(() => {
-        console.log(addMemberStatus);
-        if (addMemberStatus === "success") console.log(addMemberData);
-        if (addMemberStatus === "error") console.log(addMemberError);
-    }, [addMemberStatus]);
 
     return (
         <form className="member-form" onSubmit={handleAddMember} noValidate>

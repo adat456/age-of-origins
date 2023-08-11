@@ -12,8 +12,8 @@ const MemberSchema = new Schema({
         type: String,
         trim: true,
     },
-    battlepower: [{ type: mongoose.Types.ObjectId, ref: "BattlePower "}],
-    contributions: [{ type: mongoose.Types.ObjectId, ref: "Contributions" }],
+    battle: [{ type: mongoose.Types.ObjectId, ref: "Battle"}],
+    contributions: [{ type: mongoose.Types.ObjectId, ref: "Contribution" }],
 });
 
 module.exports = mongoose.model("Member", MemberSchema)
