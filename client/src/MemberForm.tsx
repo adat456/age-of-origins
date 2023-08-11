@@ -56,7 +56,7 @@ const MemberForm: React.FC = function() {
     };
 
     return (
-        <form className="member-form" onSubmit={handleAddMember} noValidate>
+        <form className="member-form" onSubmit={handleAddMember} method="POST" noValidate>
             <h1>Add new member</h1>
             <div>
                 <label htmlFor="username">Username</label>

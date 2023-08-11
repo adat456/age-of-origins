@@ -30,3 +30,19 @@ export async function createMember(memberData: { username: string, firstname: st
 
     return res;
 };
+
+export async function updateStats(data: { memberid: string, battle: number, contribution: number }) {
+    const reqOptions: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const req = await fetch("http://localhost:3001/update-stats", reqOptions);
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error("Unable to update stats: ", res)
+    };
+};

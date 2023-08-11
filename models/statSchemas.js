@@ -2,14 +2,14 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const BattleSchema = new Schema({
-    week: {
-        type: Number, // getWeek
-        min: 1,
-        max: 52,
+    year: {
+        type: Number, 
         required: true,
     },
-    year: {
-        type: Number, // getYear
+    week: {
+        type: Number, 
+        min: 1,
+        max: 52,
         required: true,
     },
     score: {
@@ -50,14 +50,14 @@ BattleSchema.virtual("priorTrend").get(async function() {
 });
 
 const ContributionSchema = new Schema({
-    week: {
-        type: Number, // getWeek
-        min: 1,
-        max: 52,
+    year: {
+        type: Number, 
         required: true,
     },
-    year: {
-        type: Number, // getYear
+    week: {
+        type: Number, 
+        min: 1,
+        max: 52,
         required: true,
     },
     score: {
@@ -72,5 +72,5 @@ const ContributionSchema = new Schema({
 });
 const ContributionModel = mongoose.model("Contribution", ContributionSchema);
 
-exports.BattleModel;
-exports.ContributionModel;
+exports.BattleModel = BattleModel;
+exports.ContributionModel = ContributionModel;
