@@ -37,7 +37,6 @@ router.post("/update-stats", async function(req, res, next) {
     const today = new Date();
     const year = getYear(today);
     const week = getWeek(today, { weekStartsOn: 6 });
-    console.log(year, week, memberid, battle, contribution);
 
     const existingBattleThisWeek = await BattleModel.find({
       year, week, member: new mongoose.Types.ObjectId(memberid)
@@ -68,6 +67,45 @@ router.post("/update-stats", async function(req, res, next) {
     console.error(err.message);
     res.status(400).json(err.message);
   };
+});
+
+router.get("/fetch-this-weeks-stats/:memberid", async function(req, res, next) {
+  const { memberid } = req.params;
+
+  try {
+    const today = new Date();
+    const year = getYear(today);
+    const week = getWeek(today, { weekStartsOn: 6 });
+
+    const result = {
+      battle: 0,
+      contribution: 0
+    };
+
+    const existingBattleThisWeek = await BattleModel.find({
+      year, week, member: new mongoose.Types.ObjectId(memberid)
+    });
+    if (existingBattleThisWeek.length > 0) {
+      result.battle = existingBattleThisWeek[0].score;
+    };
+    
+    const existingContributionThisWeek = await ContributionModel.find({
+      year, week, member: new mongoose.Types.ObjectId(memberid)
+    });
+    if (existingContributionThisWeek.length > 0) {
+      result.contribution = existingContributionThisWeek[0].score;
+    };
+
+    console.log(result);
+    res.status(200).json(result);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };  
+});
+
+router.get("/fetch-past-years-stats", async function(req, res, next) {
+
 });
 
 module.exports = router;

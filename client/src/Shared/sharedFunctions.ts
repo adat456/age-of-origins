@@ -31,6 +31,19 @@ export async function createMember(memberData: { username: string, firstname: st
     return res;
 };
 
+export async function fetchCurrentMembersStats(memberid: string | null) {
+    if (!memberid) return { battle: 0, contribution: 0 };
+
+    const req = await fetch(`http://localhost:3001/fetch-this-weeks-stats/${memberid}`);
+    const res = await req.json();
+    
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
 export async function updateStats(data: { memberid: string, battle: number, contribution: number }) {
     const reqOptions: RequestInit = {
         method: "POST",

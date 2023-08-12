@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchMembers } from "./sharedFunctions";
+import { fetchMembers } from "../Shared/sharedFunctions";
 import StatsForm from "./StatsForm";
 
 const MembersList: React.FC = function() {
@@ -16,6 +17,7 @@ const MembersList: React.FC = function() {
         const members = membersData?.map(member => (
             <li key={member._id}>
                 <p>{member.username}</p>
+                <Link to={`/members/${encodeURIComponent(member.username)}`}>View summary</Link>
                 <button type="button" onClick={() => {setCurrentMemberId(member._id); setStatsFormVis(true);}}>Add stats</button>
             </li>
         ));
