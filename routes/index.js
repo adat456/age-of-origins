@@ -96,7 +96,6 @@ router.get("/fetch-this-weeks-stats/:memberid", async function(req, res, next) {
       result.contribution = existingContributionThisWeek[0].score;
     };
 
-    console.log(result);
     res.status(200).json(result);
   } catch(err) {
     console.error(err.message);
@@ -104,8 +103,82 @@ router.get("/fetch-this-weeks-stats/:memberid", async function(req, res, next) {
   };  
 });
 
-router.get("/fetch-past-years-stats", async function(req, res, next) {
+router.get("/fetch-past-year-stats/:username", async function(req, res, next) {
+  const { username } = req.params;
+  // if the week number is 3, then pull 3, 2, 1 of this year (less than or equal to 3)
+  // and 4 onward of the previous year (greater than 3)
 
+  try {
+    const memberObj = await MemberModel.findOne({ username }, "_id");
+    const memberid = memberObj._id;
+
+    const today = new Date();
+    const year = getYear(today);
+    const week = getWeek(today, { weekStartsOn: 6 });
+
+    let battleRankings = [];
+    let contributions = [];
+    if (week !== 52) {
+      const thisYearsBattleStats = await BattleModel.
+        find({
+          year,
+          week: { $lte: week },
+          member: memberid
+        }).
+        sort({ week: -1 }).
+        exec();
+      const lastYearsBattleStats = await BattleModel.
+        find({
+          year: year - 1,
+          week: { $gt: week },
+          member: memberid
+        }).
+        sort({ week: -1 }).
+        exec();
+      battleRankings = [...thisYearsBattleStats, ...lastYearsBattleStats];
+
+      const thisYearsContributionStats = await ContributionModel.
+        find({
+          year,
+          week: { $lte: week },
+          member: memberid
+        }).
+        sort({ week: -1 }).
+        exec();
+      const lastYearsContributionStats = await ContributionModel.
+        find({
+          year: year - 1,
+          week: { $gt: week },
+          member: memberid
+        }).
+        sort({ week: -1 }).
+        exec();
+      contributions = [...thisYearsContributionStats, ...lastYearsContributionStats];
+
+    } else if (week === 52) {
+      battleRankings = await BattleModel.
+        find({
+          year,
+          week: { $lte: week },
+          member: new mongoose.Types.ObjectId(memberid) 
+        }).
+        sort({ week: -1 }).
+        exec();
+      contributions = await ContributionModel.
+        find({
+          year,
+          week: { $lte: week },
+          member: new mongoose.Types.ObjectId(memberid) 
+        }).
+        sort({ week: -1 }).
+        exec();
+    };
+
+    res.status(200).json({ battleRankings, contributions });
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };  
 });
 
 module.exports = router;

@@ -1,5 +1,7 @@
 import { memberInterface } from "./interfaces";
 
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats
+
 export async function fetchMembers() {
     const req = await fetch("http://localhost:3001/fetch-members");
     const res = await req.json();
@@ -37,6 +39,17 @@ export async function fetchCurrentMembersStats(memberid: string | null) {
     const req = await fetch(`http://localhost:3001/fetch-this-weeks-stats/${memberid}`);
     const res = await req.json();
     
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchPastYearStats(username: string) {
+    const req = await fetch(`http://localhost:3001/fetch-past-year-stats/${username}`);
+    const res = await req.json();
+
     if (req.ok) {
         return res;
     } else {
