@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { getYear, getWeek } from "date-fns";
 import { fetchMembers } from "../Shared/sharedFunctions";
 import StatsForm from "./StatsForm";
 
 const MembersList: React.FC = function() {
     const [ statsFormVis, setStatsFormVis ] = useState(false);
     const [ currentMemberId, setCurrentMemberId ] = useState<string | null>(null);
+
+    const today = new Date();
+    const year = getYear(today);
+    const week = getWeek(today, { weekStartsOn: 6 });
 
     const { data: membersData, error: membersErr, status: fetchMembersStatus } = useQuery({
         queryKey: [ "members" ],
@@ -17,7 +22,7 @@ const MembersList: React.FC = function() {
         const members = membersData?.map(member => (
             <li key={member._id}>
                 <p>{member.username}</p>
-                <Link to={`/members/${encodeURIComponent(member.username)}`}>View summary</Link>
+                <Link to={`/members/${member._id}`}>View summary</Link>
                 <button type="button" onClick={() => {setCurrentMemberId(member._id); setStatsFormVis(true);}}>Add stats</button>
             </li>
         ));
@@ -39,7 +44,7 @@ const MembersList: React.FC = function() {
                 {fetchMembersStatus === "error" ? <p>{membersErr.message}</p> : null}
                 {fetchMembersStatus === "success" ? generateMembers() : null}
             </ul>
-            {statsFormVis ? <StatsForm currentMemberId={currentMemberId} setCurrentMemberId={setCurrentMemberId} setStatsFormVis={setStatsFormVis} /> : null}
+            {statsFormVis ? <StatsForm year={year} week={week} currentMemberId={currentMemberId} setCurrentMemberId={setCurrentMemberId} setStatsFormVis={setStatsFormVis} /> : null}
         </>
     );
 };

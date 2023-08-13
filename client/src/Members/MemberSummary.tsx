@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPastYearStats } from "../Shared/sharedFunctions";
 import { statInterface } from "../Shared/interfaces";
+import StatsForm from "./StatsForm";
 
 const MemberSummary: React.FC = function() {
     // be careful about changing the names of these state variables--many of this component's functions' parameters depend on keeping these names the same
     const [ battleRankingsView, setBattleRankingsView ] = useState<"month" | "quarteryear" | "halfyear" | "year" | string>("month");
     const [ contributionsView, setContributionsView ] = useState<"month" | "quarteryear" | "halfyear" | "year" | string>("month");
 
-    let { username } = useParams();
-    if (username) username = decodeURIComponent(username);
+    const [ statsFormYear, setStatsFormYear ] = useState<number | undefined>(undefined);
+    const [ statsFormWeek, setStatsFormWeek ] = useState<number | undefined>(undefined);
+    const [ statsFormVis, setStatsFormVis ] = useState(false);
+
+    const { memberid } = useParams();
 
     const {
             data: pastYearStats,
             error: pastYearStatsErr,
             status: pastYearStatsStatus,
         } = useQuery({
-            queryKey: [ `${username}-past-year-stats` ],
-            queryFn: () => fetchPastYearStats(username)
+            queryKey: [ `${memberid}-past-year-stats` ],
+            queryFn: () => fetchPastYearStats(memberid)
     });
 
     function generateStatViewOptions(stat: "battleRankings" | "contributions") {
@@ -71,32 +75,49 @@ const MemberSummary: React.FC = function() {
                 <div key={stat._id}>
                     <p>{`Week ${stat.week}, ${stat.year}`}</p>
                     <p>{stat.score}</p>
+                    <button type="button" onClick={() => prepStatsForm(stat)}>Edit</button>
                 </div>
             ));
             return statSummary;
         };
     };
 
+    function prepStatsForm(stat: statInterface) {
+        setStatsFormYear(stat.year);
+        setStatsFormWeek(stat.week);
+        setStatsFormVis(true);
+    };
+
+    useEffect(() => {
+        if (statsFormVis) {
+            const statsFormDialog = document.querySelector(".stats-form-dialog") as HTMLDialogElement;
+            statsFormDialog?.showModal();
+        };
+    }, [statsFormVis]);
+
     return (
-        <section>
-            <Link to="/members">Return to all members</Link>
-            <h1>{`${username}`}</h1>
-            {pastYearStatsStatus === "success" ? 
-                <>
-                    <section>
-                        <h2>Battle Ranking Summary</h2>
-                        {generateStatViewOptions("battleRankings")}
-                        {generateStatSummary("battleRankings")}
-                    </section>
-                    <section>
-                        <h2>Contributions Summary</h2>
-                        {generateStatViewOptions("contributions")}
-                        {generateStatSummary("contributions")}
-                    </section>
-                </> : null
-            }
-            {pastYearStatsStatus === "error" ? <p>{pastYearStatsErr.message}</p> : null}
-        </section>
+        <>
+            <section>
+                <Link to="/members">Return to all members</Link>
+                {/* <h1>{`${username}`}</h1> */}
+                {pastYearStatsStatus === "success" ? 
+                    <>
+                        <section>
+                            <h2>Battle Ranking Summary</h2>
+                            {generateStatViewOptions("battleRankings")}
+                            {generateStatSummary("battleRankings")}
+                        </section>
+                        <section>
+                            <h2>Contributions Summary</h2>
+                            {generateStatViewOptions("contributions")}
+                            {generateStatSummary("contributions")}
+                        </section>
+                    </> : null
+                }
+                {pastYearStatsStatus === "error" ? <p>{pastYearStatsErr.message}</p> : null}
+            </section>
+            {statsFormVis ? <StatsForm year={statsFormYear} week={statsFormWeek} currentMemberId={memberid} setStatsFormVis={setStatsFormVis} /> : null}
+        </> 
     );
 };
 

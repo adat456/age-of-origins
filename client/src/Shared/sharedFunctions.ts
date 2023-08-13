@@ -2,6 +2,7 @@ import { memberInterface } from "./interfaces";
 
 // query keys: members, MEMBERID-stats, USERNAME-past-year-stats
 
+/// MEMBERS ///
 export async function fetchMembers() {
     const req = await fetch("http://localhost:3001/fetch-members");
     const res = await req.json();
@@ -33,10 +34,13 @@ export async function createMember(memberData: { username: string, firstname: st
     return res;
 };
 
-export async function fetchCurrentMembersStats(memberid: string | null) {
+
+/// STATS ///
+export async function fetchWeekStats(data: {memberid: string | null, year: number | undefined, week: number | undefined}) {
+    const { memberid, year, week } = data;
     if (!memberid) return { battle: 0, contribution: 0 };
 
-    const req = await fetch(`http://localhost:3001/fetch-this-weeks-stats/${memberid}`);
+    const req = await fetch(`http://localhost:3001/fetch-week-stats/${memberid}/${year}/${week}`);
     const res = await req.json();
     
     if (req.ok) {
@@ -46,8 +50,8 @@ export async function fetchCurrentMembersStats(memberid: string | null) {
     };
 };
 
-export async function fetchPastYearStats(username: string) {
-    const req = await fetch(`http://localhost:3001/fetch-past-year-stats/${username}`);
+export async function fetchPastYearStats(memberid: string) {
+    const req = await fetch(`http://localhost:3001/fetch-past-year-stats/${memberid}`);
     const res = await req.json();
 
     if (req.ok) {
@@ -57,7 +61,8 @@ export async function fetchPastYearStats(username: string) {
     };
 };
 
-export async function updateStats(data: { memberid: string, battle: number, contribution: number }) {
+// for both adding and updating stats
+export async function updateStats(data: { memberid: string, battle?: number, contribution?: number }) {
     const reqOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,3 +77,4 @@ export async function updateStats(data: { memberid: string, battle: number, cont
         throw new Error("Unable to update stats: ", res)
     };
 };
+

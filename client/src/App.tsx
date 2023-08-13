@@ -19,7 +19,7 @@ function App() {
             <Route path="/reference" />
             <Route path="/members" element={<Wrapper />}>
               <Route index element={<MembersPage />} />
-              <Route path=":username" element={<MemberSummary />} />
+              <Route path=":memberid" element={<MemberSummary />} />
             </Route>
           </Route>
         </Routes>
