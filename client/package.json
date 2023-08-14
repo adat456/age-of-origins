@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^4.32.6",
+    "chart.js": "^4.3.3",
     "date-fns": "^2.30.0",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0"
   },

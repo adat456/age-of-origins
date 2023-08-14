@@ -18,7 +18,7 @@ const AnnouncementSchema = new Schema({
     },
     editdate: {
         type: Date,
-        required: true
+        default: null,
     },
     body: {
         type: String,

@@ -13,3 +13,32 @@ export interface statInterface {
     score: number,
     member: string,
 };
+
+export interface eventInterface {
+    _id: string,
+    name: string,
+    dates: string[],
+    expectations: string,
+    participants: string[]
+};
+
+export interface announcementInterface {
+    _id: string,
+    title: string,
+    postdate: string,
+    editdate: string,
+    author: string,
+    body: string,
+    pinned: boolean,
+};
+
+export interface knowledgePostInterface {
+    _id: string,
+    title: string,
+    postdate: string,
+    editdate: string,
+    author: string,
+    body: string,
+    pinned: string,
+    tags: string[],
+};

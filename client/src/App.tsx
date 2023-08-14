@@ -4,6 +4,7 @@ import Wrapper from "./Shared/Wrapper";
 import NavBar from "./Shared/NavBar";
 import MembersPage from "./Members/MembersPage";
 import MemberSummary from "./Members/MemberSummary";
+import HomeWrapper from "./Home/HomeWrapper";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +15,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Wrapper child={<NavBar />} />}>
-            <Route index />
+            <Route index element={<HomeWrapper />} />
             <Route path="/events" />
             <Route path="/reference" />
             <Route path="/members" element={<Wrapper />}>

@@ -71,7 +71,6 @@ router.get("/fetch-week-stats/:memberid/:year/:week", async function(req, res, n
   };  
 });
 
-
 router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
   let { memberid } = req.params;
   // if the week number is 3, then pull 3, 2, 1 of this year (less than or equal to 3)
@@ -92,7 +91,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $lte: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
       const lastYearsBattleStats = await BattleModel.
         find({
@@ -100,7 +99,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $gt: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
       battleRankings = [...thisYearsBattleStats, ...lastYearsBattleStats];
 
@@ -110,7 +109,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $lte: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
       const lastYearsContributionStats = await ContributionModel.
         find({
@@ -118,7 +117,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $gt: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
       contributions = [...thisYearsContributionStats, ...lastYearsContributionStats];
 
@@ -129,7 +128,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $lte: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
       contributions = await ContributionModel.
         find({
@@ -137,7 +136,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
           week: { $lte: week },
           member: memberid
         }).
-        sort({ week: -1 }).
+        sort({ week: 1 }).
         exec();
     };
 
@@ -182,6 +181,75 @@ router.post("/update-stats", async function(req, res, next) {
     };
     
     res.status(200).json("Stats updated.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+/// ANNOUNCEMENTS ///
+router.get("/fetch-announcements", async function(req, res, next) {
+  try {
+    const announcements = await AnnouncementModel.find({}).sort({ postdate: -1 });
+    announcements.sort((a, b) => {
+      if (!a.pinned && b.pinned) return 1;
+      if (a.pinned && !b.pinned) return -1;
+      if (a.pinned === b.pinned) return 0;
+    });
+    res.status(200).json(announcements);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.post("/add-announcement", async function(req, res, next) {
+  const { author, title, body, pinned } = req.body;
+
+  try {
+    await AnnouncementModel.create({
+      author, title, body, pinned,
+      postdate: new Date(),
+      editdate: undefined,
+    });
+    res.status(200).json("Announcement created.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/edit-announcement", async function(req, res, next) {
+  const { announcementid, title, body, pinned } = req.body;
+
+  try {
+    const announcement = await AnnouncementModel.findOne({ _id: announcementid });
+    if (title) {
+      announcement.title = title;
+      announcement.editdate = new Date();
+    };
+    if (body) {
+      announcement.body = body;
+      announcement.editdate = new Date();
+    };
+    if (pinned === true || pinned === false) {
+      announcement.pinned = pinned;
+    };
+    announcement.save();
+
+    res.status(200).json("Announcement updated.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.delete("/delete-announcement/:announcementid", async function(req, res, next) {
+  const { announcementid } = req.params;
+  console.log(announcementid);
+  try {
+    await AnnouncementModel.deleteOne({ _id: announcementid });
+    res.status(200).json("Announcement deleted.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
