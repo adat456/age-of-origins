@@ -32,7 +32,7 @@ export interface announcementInterface {
     pinned: boolean,
 };
 
-export interface knowledgePostInterface {
+export interface referenceInterface {
     _id: string,
     title: string,
     postdate: string,

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchMembers, fetchWeekStats, updateStats } from "../Shared/sharedFunctions";
 
@@ -11,11 +11,11 @@ interface statsFormInterface {
 };
 
 const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMemberId, setCurrentMemberId, setStatsFormVis }) {
+    const [ battle, setBattle ] = useState<number | null>(null);
+    const [ contribution, setContribution ] = useState<number | null>(null);
+
     const [ statsFormYear, setStatsFormYear ] = useState(year);
     const [ statsFormWeek, setStatsFormWeek ] = useState(week);
-
-    const battleInputRef = useRef<HTMLInputElement>(null);
-    const contributionInputRef = useRef<HTMLInputElement>(null);
 
     const queryClient = useQueryClient();
     const { 
@@ -34,6 +34,12 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
             queryKey: [ `${currentMemberId}-stats`, currentMemberId, statsFormWeek, statsFormYear ],
             queryFn: () => fetchWeekStats({memberid: currentMemberId, week: statsFormWeek, year: statsFormYear})
     });
+    useEffect(() => {
+        if (weekStats) {
+            setBattle(weekStats.battle);
+            setContribution(weekStats.contribution);
+        };
+    }, [weekStats]);
     const { 
             mutate: mutateStats, 
             data: updateStatsData, 
@@ -41,7 +47,7 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
             status: updateStatsStatus, 
             reset: resetMutationMsg 
         } = useMutation({
-            mutationFn: (data: {memberid: string, battle: number, contribution: number}) => updateStats(data),
+            mutationFn: updateStats,
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: [ `${currentMemberId}-stats` ] })
             },
@@ -58,8 +64,9 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
         if (currentMemberId) {
             mutateStats({ 
                 memberid: currentMemberId, 
-                battle: Number(battleInputRef.current?.value),
-                contribution: Number(contributionInputRef.current?.value) 
+                battle, contribution,
+                year: statsFormYear,
+                week: statsFormWeek
             });
         };
     };
@@ -70,11 +77,6 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
         const statsFormDialog = document.querySelector(".stats-form-dialog") as HTMLDialogElement;
         statsFormDialog?.close();
     };
-
-    useEffect(() => {
-        if (battleInputRef.current) battleInputRef.current.value = weekStats?.battle;
-        if (contributionInputRef.current) contributionInputRef.current.value = weekStats?.contribution;
-    }, [weekStats]);
 
     return (
         <dialog className="stats-form-dialog">
@@ -108,11 +110,11 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
 
                 <div>
                     <label htmlFor="battle">Battle Power</label>
-                    <input type="number" id="battle" ref={battleInputRef} defaultValue={weekStatsFetchStatus === "fetching" ? "" : weekStats?.battle} min={1} required />
+                    <input type="number" id="battle" value={battle} onChange={(e) => setBattle(Number(e.target.value))} min={1} required />
                 </div>
                 <div>
                     <label htmlFor="contribution">Total Contribution</label>
-                    <input type="number" id="contribution" ref={contributionInputRef} defaultValue={weekStatsFetchStatus === "fetching" ? "" : weekStats?.contribution} min={1} required />
+                    <input type="number" id="contribution" value={contribution} onChange={(e) => setContribution(Number(e.target.value))} min={1} required />
                 </div>
 
                 {updateStatsStatus === "loading" ? <p>Saving member's stats...</p> : null}

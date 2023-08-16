@@ -146,6 +146,9 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
                 {announcementid ?
                     <button type="button" onClick={handleDelete}>Delete post</button> : null
                 }
+                {deleteAnnouncementStatus === "error" ?
+                    <p>{deleteAnnouncementErrorMsg.message}</p> : null
+                }
                 <button type="button" onClick={handleClose}>Close</button>
             </form>
         </dialog>

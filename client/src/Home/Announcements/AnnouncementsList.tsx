@@ -18,7 +18,7 @@ const AnnouncementsList: React.FC = function() {
     });
     const {
         mutate: editAnnouncementMutation,
-        error: editAnnouncementErrorMsg,
+        error: editAnnouncementError,
         status: editAnnouncementStatus
     } = useMutation({
         mutationFn: (data: { announcementid: string, pinned: boolean}) => editAnnouncement(data),
@@ -29,10 +29,15 @@ const AnnouncementsList: React.FC = function() {
         const announcementList = announcementsData?.map(announcement => (
             <li key={announcement._id}>
                 <h3>{announcement.title}</h3>
-                <p>{announcement.pinned ? "Pinned" : "Not pinned"}</p>
-                <button type="button" onClick={() => editAnnouncementMutation({ announcementid: announcement._id, pinned: !announcement.pinned})}>
-                    {announcement.pinned ? "Unpin" : "Pin"}
-                </button>
+                <div>
+                    <p>{announcement.pinned ? "Pinned" : "Not pinned"}</p>
+                    <button type="button" onClick={() => editAnnouncementMutation({ announcementid: announcement._id, pinned: !announcement.pinned})}>
+                        {announcement.pinned ? "Unpin" : "Pin"}
+                    </button>
+                    {editAnnouncementStatus === "error" ?
+                        <p>{editAnnouncementError.message}</p> : null
+                    }
+                </div>
                 <p>{`Posted ${new Date(announcement.postdate).toISOString().slice(0, 10)} by ${announcement.author}`}</p>
                 <p>{announcement.body}</p>
                 <button type="button" onClick={() => prepAnnouncementForm(announcement._id)}>Edit</button>

@@ -5,14 +5,7 @@ const mongoose = require("mongoose");
 const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
 const AnnouncementModel = require("../models/announcementSchema");
-
-function generateCurrentYearWeek() {
-  const today = new Date();
-  const year = getYear(today);
-  const week = getWeek(today, { weekStartsOn: 6 });
-
-  return { year, week };
-};
+const ReferenceModel = require("../models/referenceSchema");
 
 // still need server-side validation... beyond mongodbs?
 
@@ -250,6 +243,93 @@ router.delete("/delete-announcement/:announcementid", async function(req, res, n
   try {
     await AnnouncementModel.deleteOne({ _id: announcementid });
     res.status(200).json("Announcement deleted.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+/// REFERENCE ///
+router.get("/fetch-recent-references", async function(req, res, next) {
+  try {
+    const recentThreeReferences = await ReferenceModel.find().sort({ _id: -1 }).limit(3);
+    res.status(200).json(recentThreeReferences);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.get("/fetch-all-references", async function(req, res, next) {
+  try {
+    const allReferences = await ReferenceModel.find();
+    res.status(200).json(allReferences);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.get("/fetch-reference-by-tag", async function(req, res, next) {
+
+});
+
+router.get("/fetch-reference-by-search/:search", async function(req, res, next) {
+  let { search } = req.params;
+  search = decodeURIComponent(search);
+
+  try {
+    
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.get("/fetch-existing-tags", async function(req, res, next) {
+  try {
+    const allReferences = await ReferenceModel.find({ });
+    const tagSet = new Set();
+    allReferences.forEach(reference => {
+      reference.tags.forEach(tag => tagSet.add(tag));
+    });
+    const tagSetArr = [...tagSet];
+    res.status(200).json(tagSetArr);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.post("/add-reference", async function(req, res, next) {
+  const { author, title, body, tags } = req.body;
+
+  try {
+    await ReferenceModel.create({
+      author, title, body, tags,
+      postdate: new Date(),
+      editdate: undefined,
+    });
+    res.status(200).json("Reference post created.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/edit-reference", async function(req, res, next) {
+  const { referenceid, title, body, tags } = req.body;
+
+  try {
+    const existingReference = await ReferenceModel.findOne({ _id: referenceid });
+
+    if (title) existingReference.title = title;
+    if (body) existingReference.body = body;
+    if (tags) existingReference.tags = tags;
+
+    existingReference.editdate = new Date();
+    existingReference.save();
+    res.status(200).json("Saved edits to reference post.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

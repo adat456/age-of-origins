@@ -1,6 +1,6 @@
-import { announcementInterface, memberInterface } from "./interfaces";
+import { announcementInterface, memberInterface, referenceInterface } from "./interfaces";
 
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, references
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -61,7 +61,7 @@ export async function fetchPastYearStats(memberid: string) {
 };
 
 // for both adding and updating stats
-export async function updateStats(data: { memberid: string, battle?: number, contribution?: number }) {
+export async function updateStats(data: { memberid: string, battle?: number, contribution?: number, year: number, week: number }) {
     const reqOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,6 +123,76 @@ export async function editAnnouncement(data: {announcementid: string, title?: st
 
 export async function deleteAnnouncement(announcementid: string) {
     const req = await fetch(`http://localhost:3001/delete-announcement/${announcementid}`, { method: "DELETE" });
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+/// REFERENCES ///
+export async function fetchExistingTags() {
+    const req = await fetch("http://localhost:3001/fetch-existing-tags");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as string[];
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchRecentReferences() {
+    const req = await fetch("http://localhost:3001/fetch-recent-references");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as referenceInterface[];
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchAllReferences() {
+    const req = await fetch("http://localhost:3001/fetch-all-references");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as referenceInterface[];
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchSingleReference() {
+    
+};
+
+export async function addReference(data: {author: string, title: string, body: string, tags: string[]}) {
+    const reqOptions: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const req = await fetch(`http://localhost:3001/add-reference`, reqOptions);
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function editReference(data: {referenceid: string, title: string, body: string, tags: string[]}) {
+    const reqOptions: RequestInit = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const req = await fetch(`http://localhost:3001/edit-reference`, reqOptions);
     const res = await req.json();
 
     if (req.ok) {

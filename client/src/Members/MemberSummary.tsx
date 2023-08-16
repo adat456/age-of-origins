@@ -1,9 +1,21 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
+import { Line } from "react-chartjs-2";
 import { fetchPastYearStats } from "../Shared/sharedFunctions";
 import { statInterface } from "../Shared/interfaces";
 import StatsForm from "./StatsForm";
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const MemberSummary: React.FC = function() {
     // be careful about changing the names of these state variables--many of this component's functions' parameters depend on keeping these names the same
@@ -68,19 +80,43 @@ const MemberSummary: React.FC = function() {
         };
     };
 
-    function generateStatSummary(stat: "battleRankings" | "contributions") {
+    function generateStatChart(stat: "battleRankings" | "contributions") {
         const truncatedStats = truncateResults(stat);
-        if (truncatedStats) {
-            const statSummary = truncatedStats.map(stat => (
-                <div key={stat._id}>
-                    <p>{`Week ${stat.week}, ${stat.year}`}</p>
-                    <p>{stat.score}</p>
-                    <button type="button" onClick={() => prepStatsForm(stat)}>Edit</button>
-                </div>
-            ));
-            return statSummary;
+
+        const chartLabel = `${stat === "battleRankings" ? "Battle Rankings" : "Contributions"}`;
+        const data = {
+            labels: truncatedStats?.map(stat => stat.week),
+            datasets: [
+                {
+                    label: chartLabel,
+                    data: truncatedStats?.map(stat => stat.score),
+                    xAxisID: `${stat}-x-axis`,
+                    yAxisID: `${stat}-y-axis`,
+                    pointHoverBackgroundColor: "#000",
+                    pointHoverRadius: 5,
+                }
+            ],
+        };
+        return <Line id={`${stat}-chart`} data={data} options={generateStatChartOptions(stat)}  />;
+    };
+
+    function generateStatChartOptions(stat: "battleRankings" | "contributions") {
+        return {
+            scales: {
+            },
         };
     };
+
+    // function handleChartClick(e) {
+    //     const lineChart = document
+    //     const points = lineChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+    
+    //     if (points.length) {
+    //         const firstPoint = points[0];
+    //         const label = e.target.data.labels[firstPoint.index];
+    //         const value = e.target.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
+    //     }
+    // }
 
     function prepStatsForm(stat: statInterface) {
         setStatsFormYear(stat.year);
@@ -105,12 +141,16 @@ const MemberSummary: React.FC = function() {
                         <section>
                             <h2>Battle Ranking Summary</h2>
                             {generateStatViewOptions("battleRankings")}
-                            {generateStatSummary("battleRankings")}
+                            <div>
+                                {generateStatChart("battleRankings")}
+                            </div>
                         </section>
                         <section>
                             <h2>Contributions Summary</h2>
                             {generateStatViewOptions("contributions")}
-                            {generateStatSummary("contributions")}
+                            <div>
+                                {generateStatChart("contributions")}
+                            </div>
                         </section>
                     </> : null
                 }
