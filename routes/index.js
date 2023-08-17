@@ -305,12 +305,12 @@ router.post("/add-reference", async function(req, res, next) {
   const { author, title, body, tags } = req.body;
 
   try {
-    await ReferenceModel.create({
+    const newReference = await ReferenceModel.create({
       author, title, body, tags,
       postdate: new Date(),
       editdate: undefined,
     });
-    res.status(200).json("Reference post created.");
+    res.status(200).json(newReference._id);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -330,6 +330,19 @@ router.patch("/edit-reference", async function(req, res, next) {
     existingReference.editdate = new Date();
     existingReference.save();
     res.status(200).json("Saved edits to reference post.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.delete("/delete-reference/:referenceid", async function(req, res, next) {
+  const { referenceid } = req.params;
+  console.log(referenceid);
+
+  try {
+    await ReferenceModel.deleteOne({ _id: referenceid });
+    res.status(200).json("Reference deleted.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

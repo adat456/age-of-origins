@@ -23,6 +23,7 @@ function App() {
             <Route path="/reference" element={<Wrapper />}>
               <Route index element={<ReferenceHome />} />
               <Route path=":referenceid" element={<FullReferencePost />} />
+              <Route path=":referenceid/edit" element={<ReferenceForm />} />
               <Route path="create" element={<ReferenceForm />} />
             </Route>
             <Route path="/members" element={<Wrapper />}>

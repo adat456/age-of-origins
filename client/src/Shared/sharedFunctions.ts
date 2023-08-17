@@ -202,3 +202,15 @@ export async function editReference(data: {referenceid: string, title: string, b
     };
 };
 
+export async function deleteReference(referenceid: string) {
+    console.log(referenceid);
+    const req = await fetch(`http://localhost:3001/delete-reference/${referenceid}`, { method: "DELETE" });
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+

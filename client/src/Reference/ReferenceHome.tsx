@@ -32,7 +32,12 @@ const ReferenceHome: React.FC = function() {
     return (
         <>
             <h1>Reference</h1>
-            {generateRecentReferencePosts()}
+            {recentReferencesStatus === "loading" ? <p>Loading recently added reference posts...</p> : null}
+            {recentReferencesStatus === "error" ? <p>{recentReferencesErr.message}</p> : null}
+            {recentReferencesStatus === "success" ? 
+                generateRecentReferencePosts() 
+                : null
+            }
             <Link to="/reference/create">Create new reference post</Link>
         </>
     );
