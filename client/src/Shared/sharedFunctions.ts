@@ -1,6 +1,6 @@
 import { announcementInterface, memberInterface, referenceInterface } from "./interfaces";
 
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, references
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references
 
 /// MEMBERS ///
 export async function fetchMembers() {

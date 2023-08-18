@@ -7,7 +7,9 @@ import MemberSummary from "./Members/MemberSummary";
 import HomeWrapper from "./Home/HomeWrapper";
 import ReferenceHome from "./Reference/ReferenceHome";
 import ReferenceForm from "./Reference/ReferenceForm";
-import FullReferencePost from "./Reference/FullReferencePost";
+import FullReferencePost from "./Reference/ReferenceResults/FullReferencePost";
+import RecentReferences from "./Reference/ReferenceResults/RecentReferences";
+import TaggedReferences from "./Reference/ReferenceResults/TaggedReferences";
 
 const queryClient = new QueryClient();
 
@@ -20,10 +22,12 @@ function App() {
           <Route path="/" element={<Wrapper child={<NavBar />} />}>
             <Route index element={<HomeWrapper />} />
             <Route path="/events" />
-            <Route path="/reference" element={<Wrapper />}>
-              <Route index element={<ReferenceHome />} />
-              <Route path=":referenceid" element={<FullReferencePost />} />
-              <Route path=":referenceid/edit" element={<ReferenceForm />} />
+            <Route path="/reference" element={<ReferenceHome />}>
+              <Route index element={<RecentReferences />} />
+              <Route path="tag/:tag" element={<TaggedReferences />} />
+              
+              <Route path="post/:referenceid/edit" element={<ReferenceForm />} />
+              <Route path="post/:referenceid" element={<FullReferencePost />} />
               <Route path="create" element={<ReferenceForm />} />
             </Route>
             <Route path="/members" element={<Wrapper />}>

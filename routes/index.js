@@ -262,24 +262,8 @@ router.get("/fetch-recent-references", async function(req, res, next) {
 
 router.get("/fetch-all-references", async function(req, res, next) {
   try {
-    const allReferences = await ReferenceModel.find();
+    const allReferences = await ReferenceModel.find().sort({ _id: -1 });
     res.status(200).json(allReferences);
-  } catch(err) {
-    console.error(err.message);
-    res.status(400).json(err.message);
-  };
-});
-
-router.get("/fetch-reference-by-tag", async function(req, res, next) {
-
-});
-
-router.get("/fetch-reference-by-search/:search", async function(req, res, next) {
-  let { search } = req.params;
-  search = decodeURIComponent(search);
-
-  try {
-    
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -294,6 +278,7 @@ router.get("/fetch-existing-tags", async function(req, res, next) {
       reference.tags.forEach(tag => tagSet.add(tag));
     });
     const tagSetArr = [...tagSet];
+    tagSetArr.sort();
     res.status(200).json(tagSetArr);
   } catch(err) {
     console.error(err.message);

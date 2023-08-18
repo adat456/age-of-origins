@@ -62,7 +62,7 @@ const ReferenceForm: React.FC = function() {
         mutationFn: () => editReference({ referenceid, title, body, tags }),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: [ "references", "tags" ]});
-            navigate(`/reference/${referenceid}`);
+            navigate(`/reference/post/${referenceid}`);
         },
     });
     const {
@@ -122,7 +122,7 @@ const ReferenceForm: React.FC = function() {
     };
     // the new id of a new post does not automatically return, so useEffect listens for it before navigating to the post
     useEffect(() => {
-        if (newlyAddedReferenceId) navigate(`/reference/${newlyAddedReferenceId}`);
+        if (newlyAddedReferenceId) navigate(`/reference/post/${newlyAddedReferenceId}`);
     }, [newlyAddedReferenceId]);
 
     return (
