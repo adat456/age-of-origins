@@ -10,6 +10,7 @@ import ReferenceForm from "./Reference/ReferenceForm";
 import FullReferencePost from "./Reference/ReferenceResults/FullReferencePost";
 import RecentReferences from "./Reference/ReferenceResults/RecentReferences";
 import TaggedReferences from "./Reference/ReferenceResults/TaggedReferences";
+import EventForm from "./Events/EventForm";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Wrapper child={<NavBar />} />}>
             <Route index element={<HomeWrapper />} />
-            <Route path="/events" />
+            <Route path="/events">
+              <Route path="create" element={<EventForm />} />
+            </Route>
             <Route path="/reference" element={<ReferenceHome />}>
               <Route index element={<RecentReferences />} />
               <Route path="tag/:tag" element={<TaggedReferences />} />

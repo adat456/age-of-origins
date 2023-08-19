@@ -26,11 +26,19 @@ const FullReferencePost: React.FC = function() {
         };
     }, [allReferences]);
 
+    function generateTagLinks() {
+        const tagLinks = currentReference?.tags.map(tag => (
+            <Link to={`/reference/tag/${encodeURIComponent(tag)}`} key={tag}>{tag}</Link>
+        ));
+        return tagLinks;
+    };
+
     return (
         <>
             <Link to="/reference">Back to all reference posts</Link>
             <article>
                 <h1>{currentReference?.title}</h1>
+                {generateTagLinks()}
                 <p>{convert(currentReference?.body)}</p>
             </article>
             <Link to={`/reference/post/${currentReference?._id}/edit`}>Edit post</Link>

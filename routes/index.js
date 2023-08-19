@@ -6,6 +6,7 @@ const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
 const AnnouncementModel = require("../models/announcementSchema");
 const ReferenceModel = require("../models/referenceSchema");
+const EventModel = require("../models/eventSchema");
 
 // still need server-side validation... beyond mongodbs?
 
@@ -328,6 +329,30 @@ router.delete("/delete-reference/:referenceid", async function(req, res, next) {
   try {
     await ReferenceModel.deleteOne({ _id: referenceid });
     res.status(200).json("Reference deleted.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+
+/// EVENTS ///
+router.get("/fetch-unarchived-events", async function(req, res, next) {
+  try {
+    const unarchivedEvents = await EventModel.find({ archived: false });
+    res.status(200).json(unarchivedEvents);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.post("/create-event", async function(req, res, next) {
+  const { authorid, title, eventdates, body } = req.body;
+
+  try {
+    const newEvent = await EventModel.create({ author: authorid, title, eventdates, body, postdate: new Date() });
+    res.status(200).json(newEvent._id);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

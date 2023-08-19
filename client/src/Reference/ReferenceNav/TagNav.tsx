@@ -23,7 +23,10 @@ const TagNav: React.FC = function() {
         <nav>
             {existingTagsStatus === "loading" ? <p>Loading tags...</p> : null}
             {existingTagsStatus === "error" ? <p>{existingTagsErr.message}</p> : null}
-            {existingTagsStatus === "success" ? generateTagLinks() : null}
+            {existingTagsStatus === "success" ? 
+                <>
+                    {generateTagLinks()}
+                </> : null}
         </nav>
     );
 };
