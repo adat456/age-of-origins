@@ -13,7 +13,7 @@ const EventSchema = new Schema({
         trim: true
     },
     eventdates: {
-        type: [Date],
+        type: [String],
         required: true,
     },
     postdate: {
@@ -34,7 +34,7 @@ const EventSchema = new Schema({
         required: true
     },
     archived: {
-        type: boolean,
+        type: Boolean,
         default: false,
         required: true
     }

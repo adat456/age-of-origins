@@ -1,6 +1,6 @@
 import { announcementInterface, memberInterface, referenceInterface } from "./interfaces";
 
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references, events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -166,10 +166,6 @@ export async function fetchAllReferences() {
     };
 };
 
-export async function fetchSingleReference() {
-    
-};
-
 export async function addReference(data: {author: string, title: string, body: string, tags: string[]}) {
     const reqOptions: RequestInit = {
         method: "POST",
@@ -205,6 +201,23 @@ export async function editReference(data: {referenceid: string, title: string, b
 export async function deleteReference(referenceid: string) {
     console.log(referenceid);
     const req = await fetch(`http://localhost:3001/delete-reference/${referenceid}`, { method: "DELETE" });
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+/// EVENTS ///
+export async function addEvent(data: {author: string, title: string, body: string, eventdates: string[]}) {
+    const reqOptions: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const req = await fetch(`http://localhost:3001/add-event`, reqOptions);
     const res = await req.json();
 
     if (req.ok) {

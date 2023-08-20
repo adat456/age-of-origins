@@ -2,17 +2,42 @@ import { useState, useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { convert } from "html-to-text";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addEvent } from "../Shared/sharedFunctions";
+import EventDatesFieldset from "./EventDatesFieldset";
 
 const EventForm: React.FC = function() {
     const [ title, setTitle ] = useState("");
     const [ titleErr, setTitleErr ] = useState("");
     const [ body, setBody ] = useState("");
     const [ bodyErr, setBodyErr ] = useState("");
+    /////////
     const [ dateRange, setDateRange ] = useState(false);
+    ///
     const [ individualDateId, setIndividualDateId ] = useState(1);
-    const [ individualDates, setIndividualDates ] = useState<number[] | Date[]>([]);
-    const [ eventdates, setEventdates ] = useState<Date[]>([]);
+    const [ individualDates, setIndividualDates ] = useState<{id: number, date: string}[]>([{id: 0, date: new Date().toISOString().slice(0, 10)}]);
+    ///
+    const [ startDate, setStartDate ] = useState(new Date().toISOString().slice(0, 10));
+    const [ endDate, setEndDate ] = useState(new Date().toISOString().slice(0, 10));
 
+    const queryClient = useQueryClient();
+    const {
+        mutate: addEventMutation,
+        status: addEventStatus,
+        error: addEventErr
+    } = useMutation({
+        mutationFn: () => addEvent({
+            author: "64d69b49a8599d958bc51e57",
+            title, body,
+            eventdates: dateRange ?
+                [startDate, endDate] :
+                individualDates.map(date => date.date)
+        }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [ "events" ]});
+        },
+    });
+    
     function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setTitle(e.target.value);
         if (!e.target.value.trim()) {
@@ -39,19 +64,23 @@ const EventForm: React.FC = function() {
         };  
     }, [body]);
 
-    function generateIndividualDateFields() {
+    function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
 
+        if (addEventStatus !== "loading") {
+            addEventMutation();
+            if (addEventStatus === "success") console.log("success");
+        };
     };
 
     function clearAllFields() {
         setTitle("");
         setBody("");
         setDateRange(false);
-        setEventdates([]);
     };
 
     return (
-        <form method="POST" noValidate>
+        <form method="POST" noValidate onSubmit={handleSubmit}>
             <div>
                 <label htmlFor="title">Name</label>
                 {titleErr ? <p>{titleErr}</p> : null}
@@ -63,23 +92,7 @@ const EventForm: React.FC = function() {
                 <ReactQuill id="body" value={body} onChange={setBody} placeholder="Start typing here..." />
             </div>
             <button type="button" onClick={() => setDateRange(!dateRange)}>{dateRange ? "Setting dates by range" : "Setting dates individually"}</button>
-            {dateRange ?
-                <fieldset>
-                    <legend>Event date range</legend>
-                    <div>
-                        <label htmlFor="startdate">Start</label>
-                        <input type="date" name="startdate" id="startdate" />
-                    </div>
-                    <div>
-                        <label htmlFor="enddate">End</label>
-                        <input type="date" name="enddate" id="enddate" />
-                    </div>
-                </fieldset>
-                :
-                <fieldset>
-                    <legend>Event dates</legend>
-                </fieldset>
-            }
+            <EventDatesFieldset dateRange={dateRange} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
             <button type="reset" onClick={clearAllFields}>Clear</button>
             <button type="submit">Create</button>
         </form>

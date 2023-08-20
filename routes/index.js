@@ -347,11 +347,11 @@ router.get("/fetch-unarchived-events", async function(req, res, next) {
   };
 });
 
-router.post("/create-event", async function(req, res, next) {
-  const { authorid, title, eventdates, body } = req.body;
+router.post("/add-event", async function(req, res, next) {
+  const { author, title, eventdates, body } = req.body;
 
   try {
-    const newEvent = await EventModel.create({ author: authorid, title, eventdates, body, postdate: new Date() });
+    const newEvent = await EventModel.create({ author, title, eventdates, body, postdate: new Date() });
     res.status(200).json(newEvent._id);
   } catch(err) {
     console.error(err.message);
