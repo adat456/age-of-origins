@@ -347,11 +347,21 @@ router.get("/fetch-unarchived-events", async function(req, res, next) {
   };
 });
 
+router.get("/fetch-archived-events", async function(req, res, next) {
+  try {
+    const archivedEvents = await EventModel.find({ archived: true });
+    res.status(200).json(archivedEvents);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 router.post("/add-event", async function(req, res, next) {
-  const { author, title, eventdates, body } = req.body;
+  const { author, title, range, eventdates, body } = req.body;
 
   try {
-    const newEvent = await EventModel.create({ author, title, eventdates, body, postdate: new Date() });
+    const newEvent = await EventModel.create({ author, title, range, eventdates, body, postdate: new Date() });
     res.status(200).json(newEvent._id);
   } catch(err) {
     console.error(err.message);

@@ -12,9 +12,8 @@ const EventForm: React.FC = function() {
     const [ body, setBody ] = useState("");
     const [ bodyErr, setBodyErr ] = useState("");
     /////////
-    const [ dateRange, setDateRange ] = useState(false);
+    const [ daterange, setDaterange ] = useState(false);
     ///
-    const [ individualDateId, setIndividualDateId ] = useState(1);
     const [ individualDates, setIndividualDates ] = useState<{id: number, date: string}[]>([{id: 0, date: new Date().toISOString().slice(0, 10)}]);
     ///
     const [ startDate, setStartDate ] = useState(new Date().toISOString().slice(0, 10));
@@ -29,7 +28,8 @@ const EventForm: React.FC = function() {
         mutationFn: () => addEvent({
             author: "64d69b49a8599d958bc51e57",
             title, body,
-            eventdates: dateRange ?
+            range: daterange,
+            eventdates: daterange ?
                 [startDate, endDate] :
                 individualDates.map(date => date.date)
         }),
@@ -69,14 +69,13 @@ const EventForm: React.FC = function() {
 
         if (addEventStatus !== "loading") {
             addEventMutation();
-            if (addEventStatus === "success") console.log("success");
         };
     };
 
     function clearAllFields() {
         setTitle("");
         setBody("");
-        setDateRange(false);
+        setDaterange(false);
     };
 
     return (
@@ -91,8 +90,8 @@ const EventForm: React.FC = function() {
                 {bodyErr ? <p>{bodyErr}</p> : null}
                 <ReactQuill id="body" value={body} onChange={setBody} placeholder="Start typing here..." />
             </div>
-            <button type="button" onClick={() => setDateRange(!dateRange)}>{dateRange ? "Setting dates by range" : "Setting dates individually"}</button>
-            <EventDatesFieldset dateRange={dateRange} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
+            <button type="button" onClick={() => setDaterange(!daterange)}>{daterange ? "Setting dates by range" : "Setting dates individually"}</button>
+            <EventDatesFieldset daterange={daterange} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
             <button type="reset" onClick={clearAllFields}>Clear</button>
             <button type="submit">Create</button>
         </form>

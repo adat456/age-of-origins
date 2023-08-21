@@ -12,6 +12,10 @@ const EventSchema = new Schema({
         required: true,
         trim: true
     },
+    range: {
+        type: Boolean,
+        required: true,
+    },
     eventdates: {
         type: [String],
         required: true,

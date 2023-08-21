@@ -42,3 +42,16 @@ export interface referenceInterface {
     pinned: string,
     tags: string[],
 };
+
+export interface eventInterface {
+    _id: string,
+    title: string,
+    postdate: string,
+    editdate: string,
+    author: string,
+    range: boolean,
+    eventdates: string[],
+    body: string,
+    participation: string[],
+    archived: boolean
+};

@@ -1,6 +1,6 @@
 import { announcementInterface, memberInterface, referenceInterface } from "./interfaces";
 
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references, events
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references, events, archived-events, unarchived-events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -211,7 +211,29 @@ export async function deleteReference(referenceid: string) {
 };
 
 /// EVENTS ///
-export async function addEvent(data: {author: string, title: string, body: string, eventdates: string[]}) {
+export async function fetchUnarchivedEvents() {
+    const req = await fetch("http://localhost:3001/fetch-unarchived-events");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchArchivedEvents() {
+    const req = await fetch("http://localhost:3001/fetch-archived-events");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function addEvent(data: {author: string, title: string, body: string, range: boolean, eventdates: string[]}) {
     const reqOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
