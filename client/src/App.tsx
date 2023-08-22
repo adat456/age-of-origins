@@ -13,6 +13,7 @@ import TaggedReferences from "./Reference/ReferenceResults/TaggedReferences";
 import EventsHome from "./Events/EventsHome";
 import EventForm from "./Events/EventForm";
 import AllEvents from "./Events/AllEvents";
+import ExpandedEvent from "./Events/ExpandedEvent";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function App() {
             <Route path="/events" element={<EventsHome />}>
               <Route index element={<AllEvents />} />
               <Route path="create" element={<EventForm />} />
+              <Route path=":eventid" element={<ExpandedEvent />} />
             </Route>
             <Route path="/reference" element={<ReferenceHome />}>
               <Route index element={<RecentReferences />} />

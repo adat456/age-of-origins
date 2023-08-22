@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-const { getYear, getWeek } = require("date-fns");
+const { getYear, getWeek, parseISO, eachDayOfInterval } = require("date-fns");
 const mongoose = require("mongoose");
 const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
@@ -340,7 +340,23 @@ router.delete("/delete-reference/:referenceid", async function(req, res, next) {
 router.get("/fetch-unarchived-events", async function(req, res, next) {
   try {
     const unarchivedEvents = await EventModel.find({ archived: false });
-    res.status(200).json(unarchivedEvents);
+    console.log(unarchivedEvents);
+    const unarchivedEventsWithExpRanges = unarchivedEvents.map(event => {
+      if (event.range) {
+        let daysBetweenInclusive = eachDayOfInterval({
+          start: parseISO(event.eventdates[0]),
+          end: parseISO(event.eventdates[1])
+        });
+        return {
+          ...event.toObject(),
+          eventdates: daysBetweenInclusive.map(date => date.toISOString().slice(0, 10))
+        };
+      } else {
+        return event;
+      };
+    });
+    console.log(unarchivedEventsWithExpRanges);
+    res.status(200).json(unarchivedEventsWithExpRanges);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -350,7 +366,21 @@ router.get("/fetch-unarchived-events", async function(req, res, next) {
 router.get("/fetch-archived-events", async function(req, res, next) {
   try {
     const archivedEvents = await EventModel.find({ archived: true });
-    res.status(200).json(archivedEvents);
+    const archivedEventsWithExpRanges = archivedEvents.map(event => {
+      if (event.range) {
+        let daysBetweenInclusive = eachDayOfInterval({
+          start: parseISO(event.eventdates[0]),
+          end: parseISO(event.eventdates[1])
+        });
+        return {
+          ...event.toObject(),
+          eventdates: daysBetweenInclusive.map(date => date.toISOString().slice(0, 10))
+        };
+      } else {
+        return event;
+      };
+    });
+    res.status(200).json(archivedEventsWithExpRanges);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -363,6 +393,20 @@ router.post("/add-event", async function(req, res, next) {
   try {
     const newEvent = await EventModel.create({ author, title, range, eventdates, body, postdate: new Date() });
     res.status(200).json(newEvent._id);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/toggle-event-archival/:eventid", async function(req, res, next) {
+  const { eventid } = req.params;
+
+  try {
+    const matchingEvent = await EventModel.findOne({ _id: eventid });
+    matchingEvent.archived = !matchingEvent.archived;
+    matchingEvent.save();
+    res.status(200).json("Event archival status toggled.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

@@ -249,3 +249,14 @@ export async function addEvent(data: {author: string, title: string, body: strin
     };
 };
 
+export async function toggleEventArchival(eventid: string) {
+    const req = await fetch(`http://localhost:3001/toggle-event-archival/${eventid}`, { method: "PATCH" });
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+

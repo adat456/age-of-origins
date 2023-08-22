@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { fetchUnarchivedEvents, fetchArchivedEvents } from "../Shared/sharedFunctions";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchUnarchivedEvents, fetchArchivedEvents, toggleEventArchival } from "../Shared/sharedFunctions";
 import { eventInterface } from "../Shared/interfaces";
 import { convert } from "html-to-text";
+import { add, formatISO, parseISO } from "date-fns";
 
 const AllEvents: React.FC = function() {
     const [ archivedEventsVis, setArchivedEventsVis ] = useState(false);
     const [ timeFilter, setTimeFilter ] = useState("");
 
+    const queryClient = useQueryClient();
     const {
         data: archivedEvents,
         status: archivedEventsStatus,
@@ -26,18 +28,32 @@ const AllEvents: React.FC = function() {
         queryKey: [ "unarchived-events" ],
         queryFn: fetchUnarchivedEvents
     });
+    const {
+        mutate: toggleArchivalMutation,
+        status: toggleArchivalStatus,
+        error: toggleArchivalError
+    } = useMutation({
+        mutationFn: (eventid: string) => {
+            return toggleEventArchival(eventid);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [ "archived-events, unarchived-events" ]});
+        },
+    });
 
-    const todayISO = new Date().toISOString().slice(0, 10);
+    const todayISO = formatISO(new Date()).slice(0, 10);
+    const weekFromTodayISO = add(parseISO(todayISO), { weeks: 1 }).toISOString().slice(0, 10);
+    const twoWeeksFromTodayISO = add(parseISO(todayISO), { weeks: 2 }).toISOString().slice(0, 10);
+    const monthFromTodayISO = add(parseISO(todayISO), { months: 1 }).toISOString().slice(0, 10);
 
     function generateDates(range: boolean, dates: string[]) {
         dates?.sort();
-        console.log(dates);
         if (range) {
             return (
-                <p>{`Dates: ${dates[0]} through ${dates[1]}`}</p>
+                <p>{`Dates: ${dates[0]} through ${dates[dates.length - 1]}`}</p>
             );
         } else {
-            const commaDelimitedDatesString = dates.join(", ");
+            const commaDelimitedDatesString = dates?.join(", ");
             return (
                 <p>{`Dates: ${commaDelimitedDatesString}`}</p>
             );
@@ -45,18 +61,38 @@ const AllEvents: React.FC = function() {
     };
 
     function generateEvents(array: eventInterface[]) {
-        if (array.length > 0) {
-            const events = array.map(event => (
-                <div key={event._id}>
-                    <h2>{event.name}</h2>
-                    <p>{convert(event.body)}</p>
-                    {generateDates(event.range, event.eventdates)}
-                </div>
-            ));
-            return events;
+        if (array.length === 0) return (<p>No events found.</p>);
+
+        let events = null;
+        let arrayForGeneratingEvents: eventInterface[] = [];
+        if (timeFilter) {
+            switch (timeFilter) {
+                case "today": 
+                    arrayForGeneratingEvents = array.filter(event => event.eventdates.includes(todayISO));
+                    break;
+                case "nextWeek": 
+                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= weekFromTodayISO));
+                    break;
+                case "nextTwoWeeks": 
+                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= twoWeeksFromTodayISO));
+                    break;
+                case "nextMonth": 
+                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= monthFromTodayISO));
+                    break;
+            };
         } else {
-            return (<p>No events found.</p>);
+            arrayForGeneratingEvents = [...array];
         };
+
+        events = arrayForGeneratingEvents.map(event => (
+            <div key={event._id}>
+                <h2>{event.title}</h2>
+                <button type="button" onClick={() => toggleArchivalMutation(event._id)}>{event.archived ? "Unarchive" : "Archive"}</button>
+                <p>{convert(event.body)}</p>
+                {generateDates(event.range, event.eventdates)}
+            </div>
+        ));
+        return events;
     };
 
     return (
