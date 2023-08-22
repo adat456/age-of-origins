@@ -29,6 +29,7 @@ function App() {
               <Route index element={<AllEvents />} />
               <Route path="create" element={<EventForm />} />
               <Route path=":eventid" element={<ExpandedEvent />} />
+              <Route path=":eventid/edit" element={<EventForm />} />
             </Route>
             <Route path="/reference" element={<ReferenceHome />}>
               <Route index element={<RecentReferences />} />

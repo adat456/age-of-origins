@@ -1,7 +1,7 @@
-import { useState } from "react";
-
 interface eventDatesFieldsetInterface {
     daterange: boolean,
+    individualDateId: number,
+    setIndividualDateId: React.Dispatch<React.SetStateAction<number>>,
     individualDates: {id: number, date: string}[],
     setIndividualDates: React.Dispatch<React.SetStateAction<{id: number, date: string}[]>>,
     startDate: string,
@@ -11,7 +11,6 @@ interface eventDatesFieldsetInterface {
 };
 
 const EventDatesFieldset: React.FC<eventDatesFieldsetInterface> = function({ daterange, individualDates, setIndividualDates, startDate, setStartDate, endDate, setEndDate }) {
-    const [ individualDateId, setIndividualDateId ] = useState(1);
 
     function generateIndividualDateFields() {
         const individualDateFields = individualDates.map((date, index) => (

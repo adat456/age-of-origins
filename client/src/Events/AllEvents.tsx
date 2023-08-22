@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchUnarchivedEvents, fetchArchivedEvents, toggleEventArchival } from "../Shared/sharedFunctions";
+import { fetchAllEvents, fetchUnarchivedEvents, fetchArchivedEvents, toggleEventArchival } from "../Shared/sharedFunctions";
 import { eventInterface } from "../Shared/interfaces";
 import { convert } from "html-to-text";
 import { add, formatISO, parseISO } from "date-fns";
@@ -27,6 +27,11 @@ const AllEvents: React.FC = function() {
     } = useQuery({
         queryKey: [ "unarchived-events" ],
         queryFn: fetchUnarchivedEvents
+    });
+    const allEvents = useQuery({
+        queryKey: [ "events" ],
+        queryFn: fetchAllEvents,
+        enabled: !!(unarchivedEvents || archivedEvents),
     });
     const {
         mutate: toggleArchivalMutation,
@@ -86,7 +91,7 @@ const AllEvents: React.FC = function() {
 
         events = arrayForGeneratingEvents.map(event => (
             <div key={event._id}>
-                <h2>{event.title}</h2>
+                <Link to={`/events/${event._id}`}><h2>{event.title}</h2></Link>
                 <button type="button" onClick={() => toggleArchivalMutation(event._id)}>{event.archived ? "Unarchive" : "Archive"}</button>
                 <p>{convert(event.body)}</p>
                 {generateDates(event.range, event.eventdates)}

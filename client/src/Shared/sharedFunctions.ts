@@ -1,4 +1,4 @@
-import { announcementInterface, memberInterface, referenceInterface } from "./interfaces";
+import { announcementInterface, eventInterface, memberInterface, referenceInterface } from "./interfaces";
 
 // query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references, events, archived-events, unarchived-events
 
@@ -211,23 +211,34 @@ export async function deleteReference(referenceid: string) {
 };
 
 /// EVENTS ///
-export async function fetchUnarchivedEvents() {
-    const req = await fetch("http://localhost:3001/fetch-unarchived-events");
+export async function fetchAllEvents() {
+    const req = await fetch("http://localhost:3001/fetch-events/all");
     const res = await req.json();
 
     if (req.ok) {
-        return res;
+        return res as eventInterface[];
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchUnarchivedEvents() {
+    const req = await fetch("http://localhost:3001/fetch-events/false");
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as eventInterface[];
     } else {
         throw new Error(res);
     };
 };
 
 export async function fetchArchivedEvents() {
-    const req = await fetch("http://localhost:3001/fetch-archived-events");
+    const req = await fetch("http://localhost:3001/fetch-events/true");
     const res = await req.json();
 
     if (req.ok) {
-        return res;
+        return res as eventInterface[];
     } else {
         throw new Error(res);
     };
@@ -259,4 +270,21 @@ export async function toggleEventArchival(eventid: string) {
         throw new Error(res);
     };
 };
+
+export async function editEvent(data: {eventid: string, title?: string, body?: string, range?: boolean, eventdates?: string[], participation?: string[]}) {
+    const reqOptions: RequestInit = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const req = await fetch(`http://localhost:3001/edit-event`, reqOptions);
+    const res = await req.json();
+
+    if (req.ok) {
+        return res;
+    } else {
+        throw new Error(res);
+    };
+};
+
 

@@ -337,11 +337,10 @@ router.delete("/delete-reference/:referenceid", async function(req, res, next) {
 
 
 /// EVENTS ///
-router.get("/fetch-unarchived-events", async function(req, res, next) {
+router.get("/fetch-all-events", async function(req, res, next) {
   try {
-    const unarchivedEvents = await EventModel.find({ archived: false });
-    console.log(unarchivedEvents);
-    const unarchivedEventsWithExpRanges = unarchivedEvents.map(event => {
+    const allEvents = await EventModel.find();
+    const allEventsWithExpRanges = allEvents.map(event => {
       if (event.range) {
         let daysBetweenInclusive = eachDayOfInterval({
           start: parseISO(event.eventdates[0]),
@@ -355,18 +354,25 @@ router.get("/fetch-unarchived-events", async function(req, res, next) {
         return event;
       };
     });
-    console.log(unarchivedEventsWithExpRanges);
-    res.status(200).json(unarchivedEventsWithExpRanges);
+    res.status(200).json(allEventsWithExpRanges);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
   };
 });
 
-router.get("/fetch-archived-events", async function(req, res, next) {
+router.get("/fetch-events/:archived", async function(req, res, next) {
+  const { archived } = req.params;
+
   try {
-    const archivedEvents = await EventModel.find({ archived: true });
-    const archivedEventsWithExpRanges = archivedEvents.map(event => {
+    let events;
+    if (archived === "all") {
+      events = await EventModel.find();
+    } else if (archived === "true" || archived === "false") {
+      events = await EventModel.find({ archived });
+    };
+    
+    const eventsWithExpRanges = events.map(event => {
       if (event.range) {
         let daysBetweenInclusive = eachDayOfInterval({
           start: parseISO(event.eventdates[0]),
@@ -380,7 +386,8 @@ router.get("/fetch-archived-events", async function(req, res, next) {
         return event;
       };
     });
-    res.status(200).json(archivedEventsWithExpRanges);
+
+    res.status(200).json(eventsWithExpRanges);
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -407,6 +414,31 @@ router.patch("/toggle-event-archival/:eventid", async function(req, res, next) {
     matchingEvent.archived = !matchingEvent.archived;
     matchingEvent.save();
     res.status(200).json("Event archival status toggled.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/edit-event", async function(req, res, next) {
+  const { eventid, title, range, eventdates, body, participation } = req.body;
+  console.log(eventdates);
+
+  try {
+    const matchingEvent = await EventModel.findOne({ _id: eventid });
+  
+    if (title) matchingEvent.title = title; 
+    if (eventdates?.length > 0) {
+      matchingEvent.range = range;
+      matchingEvent.eventdates = eventdates;
+    };
+    if (body) matchingEvent.body = body;
+    if (participation) matchingEvent.participation = participation;
+
+    matchingEvent.editdate = new Date().toISOString().slice(0, 10);
+    matchingEvent.markModified("eventdates");
+    await matchingEvent.save();
+    res.status(200).json("Event saved.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
