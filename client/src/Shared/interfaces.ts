@@ -11,7 +11,7 @@ export interface statInterface {
     year: number,
     week: number,
     score: number,
-    member: string,
+    member: string | memberInterface,
 };
 
 export interface eventInterface {

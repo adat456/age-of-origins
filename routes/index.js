@@ -34,6 +34,21 @@ router.post("/create-member", async function(req, res, next) {
 });
 
 /// STATS ///
+router.get("/fetch-all-members-stats/:stat/:year/:week", async function(req, res, next) {
+  const { stat, year, week } = req.params;
+
+  try {
+    let result;
+    if (stat === "battle") result = await BattleModel.find({ year, week }).sort({ score: -1 }).populate("member");
+    if (stat === "contribution") result = await ContributionModel.find({ year, week }).sort({ score: -1 }).populate("member");
+
+    res.status(200).json(result);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 router.get("/fetch-week-stats/:memberid/:year/:week", async function(req, res, next) {
   let { memberid, year, week } = req.params;
 
@@ -422,7 +437,6 @@ router.patch("/toggle-event-archival/:eventid", async function(req, res, next) {
 
 router.patch("/edit-event", async function(req, res, next) {
   const { eventid, title, range, eventdates, body, participation } = req.body;
-  console.log(eventdates);
 
   try {
     const matchingEvent = await EventModel.findOne({ _id: eventid });

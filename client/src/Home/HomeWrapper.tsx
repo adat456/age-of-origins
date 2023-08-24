@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AnnouncementsList from "./Announcements/AnnouncementsList";
 import AnnouncementForm from "./Announcements/AnnouncementForm";
+import Scoreboard from "./Scoreboard";
 
 const HomeWrapper: React.FC = function() {
     const [ announcementFormVis, setAnnouncementFormVis ] = useState(false);
@@ -16,6 +17,8 @@ const HomeWrapper: React.FC = function() {
         <main>
             <AnnouncementsList />
             <button type="button" onClick={() => setAnnouncementFormVis(true)}>Add announcement</button>
+            <Scoreboard stat="battle" />
+            <Scoreboard stat="contribution" />
             {announcementFormVis ?
                 <AnnouncementForm setAnnouncementFormVis={setAnnouncementFormVis} /> : null
             }

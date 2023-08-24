@@ -1,6 +1,6 @@
-import { announcementInterface, eventInterface, memberInterface, referenceInterface } from "./interfaces";
+import { announcementInterface, eventInterface, memberInterface, referenceInterface, statInterface } from "./interfaces";
 
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, announcements, tags, recent-references, references, events, archived-events, unarchived-events
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, events, archived-events, unarchived-events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -35,6 +35,28 @@ export async function createMember(memberData: { username: string, firstname: st
 };
 
 /// STATS ///
+export async function fetchAllMembersBattle(data: {year: number, week: number}) {
+    const req = await fetch(`http://localhost:3001/fetch-all-members-stats/battle/${data.year}/${data.week}`);
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as statInterface[];
+    } else {
+        throw new Error(res);
+    };
+};
+
+export async function fetchAllMembersContribution(data: {year: number, week: number}) {
+    const req = await fetch(`http://localhost:3001/fetch-all-members-stats/contribution/${data.year}/${data.week}`);
+    const res = await req.json();
+
+    if (req.ok) {
+        return res as statInterface[];
+    } else {
+        throw new Error(res);
+    };
+};
+
 export async function fetchWeekStats(data: {memberid: string | null, year: number | undefined, week: number | undefined}) {
     const { memberid, year, week } = data;
     if (!memberid) return { battle: 0, contribution: 0 };
