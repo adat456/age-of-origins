@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Wrapper from "./Shared/Wrapper";
 import NavBar from "./Shared/NavBar";
 import MembersPage from "./Members/MembersPage";
-import MemberSummary from "./Members/MemberSummary";
+import MemberSummary from "./Members/MemberSummar/MemberSummary";
 import HomeWrapper from "./Home/HomeWrapper";
 import ReferenceHome from "./Reference/ReferenceHome";
 import ReferenceForm from "./Reference/ReferenceForm";

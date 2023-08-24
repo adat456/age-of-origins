@@ -11,8 +11,8 @@ interface statsFormInterface {
 };
 
 const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMemberId, setCurrentMemberId, setStatsFormVis }) {
-    const [ battle, setBattle ] = useState<number | null>(null);
-    const [ contribution, setContribution ] = useState<number | null>(null);
+    const [ battle, setBattle ] = useState<number | 0>(0);
+    const [ contribution, setContribution ] = useState<number | 0>(0);
 
     const [ statsFormYear, setStatsFormYear ] = useState(year);
     const [ statsFormWeek, setStatsFormWeek ] = useState(week);
