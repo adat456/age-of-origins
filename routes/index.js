@@ -85,11 +85,45 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
   // if the week number is 3, then pull 3, 2, 1 of this year (less than or equal to 3)
   // and 4 onward of the previous year (greater than 3)
 
-  try {
+  // fills in for weeks with a week year object when there is no data (takes in an array of either battle rankings or contributions that have already been pulled)
+  function fillInMissingWeeks(weekNum, year, allStats) {
+    if (weekNum !== 52) {
+      let filledOutStats = [];
+      let weekYears = [];
+      // starts with previous year's weeks and continues with this year's weeks up until the current week
+      for (let i = weekNum + 1; i <= 52; i++) weekYears.push({ week: i, year: year - 1 });
+      for (let i = 1; i <= weekNum; i++) weekYears.push({ week: i, year });
+      
+      weekYears.forEach(weekYear => {
+        const statForThisWeekNum = allStats.find(stat => stat.week === weekYear.week);
+        if (statForThisWeekNum) {
+          filledOutStats.push(statForThisWeekNum);
+        } else {
+          filledOutStats.push(weekYear);
+        };
+      });
 
+      return filledOutStats;
+    } else if (weekNum === 52) {
+      let filledOutStats = [];
+      for (let i = 1; i <= weekNum; i++) {
+        const statForThisWeekNum = allStats.find(stat => stat.week === i);
+        if (statForThisWeekNum) {
+          filledOutStats.push(statForThisWeekNum);
+        } else {
+          filledOutStats.push({ week: i, year });
+        };
+      };
+
+      return filledOutStats;
+    };
+  };
+
+  try {
     const today = new Date();
     const year = getYear(today);
     const week = getWeek(today, { weekStartsOn: 6 });
+    console.log(week);
 
     let battleRankings = [];
     let contributions = [];
@@ -111,6 +145,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
         sort({ week: 1 }).
         exec();
       battleRankings = [...thisYearsBattleStats, ...lastYearsBattleStats];
+      battleRankings = fillInMissingWeeks(week, year, battleRankings);
 
       const thisYearsContributionStats = await ContributionModel.
         find({
@@ -129,6 +164,7 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
         sort({ week: 1 }).
         exec();
       contributions = [...thisYearsContributionStats, ...lastYearsContributionStats];
+      contributions = fillInMissingWeeks(week, year, contributions);
 
     } else if (week === 52) {
       battleRankings = await BattleModel.
@@ -139,6 +175,8 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
         }).
         sort({ week: 1 }).
         exec();
+      battleRankings = fillInMissingWeeks(week, year, battleRankings);
+
       contributions = await ContributionModel.
         find({
           year,
@@ -147,8 +185,10 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
         }).
         sort({ week: 1 }).
         exec();
+      contributions = fillInMissingWeeks(week, year, contributions);
     };
 
+    console.log(battleRankings);
     res.status(200).json({ battleRankings, contributions });
   } catch(err) {
     console.error(err.message);

@@ -107,7 +107,7 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
             if (pointElement.length > 0) {
                 const truncatedStats = truncateResults();
                 const pointIndex = pointElement[0].element.$context.parsed.x;
-                
+
                 if (truncatedStats && pointIndex) prepStatsForm(truncatedStats[pointIndex]);
             };
         };
@@ -128,15 +128,14 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
 
     return (
         <>
-            {pastYearStats.status === "success" ? 
-                <section>
-                    <h2>Battle Ranking Summary</h2>
-                    {generateStatViewOptions()}
-                    <div>
-                        {generateStatChart()}
-                    </div>
-                </section> : null
-            }
+            <section>
+                <h2>{`${stat === "battleRankings" ? "Battle Ranking" : "Contribution"} Summary`}</h2>
+                {generateStatViewOptions()}
+                <div>
+                    {pastYearStats.status === "loading" ? <p>Loading graph...</p> : null}
+                    {pastYearStats.status === "success" ? generateStatChart() : null}
+                </div>
+            </section>
             {pastYearStats.status === "error" ? <p>{pastYearStats.error}</p> : null}
             {statsFormVis ? <StatsForm year={statsFormYear} week={statsFormWeek} currentMemberId={memberid} setStatsFormVis={setStatsFormVis} /> : null}
         </>
