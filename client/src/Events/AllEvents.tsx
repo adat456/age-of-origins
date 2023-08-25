@@ -11,20 +11,12 @@ const AllEvents: React.FC = function() {
     const [ timeFilter, setTimeFilter ] = useState("");
 
     const queryClient = useQueryClient();
-    const {
-        data: archivedEvents,
-        status: archivedEventsStatus,
-        error: archivedEventsError
-    } = useQuery({
+    const archivedEvents = useQuery({
         queryKey: [ "archived-events" ],
         queryFn: fetchArchivedEvents,
         enabled: archivedEventsVis
     });
-    const {
-        data: unarchivedEvents,
-        status: unarchivedEventsStatus,
-        error: unarchivedEventsError
-    } = useQuery({
+    const unarchivedEvents = useQuery({
         queryKey: [ "unarchived-events" ],
         queryFn: fetchUnarchivedEvents
     });
@@ -33,16 +25,11 @@ const AllEvents: React.FC = function() {
         queryFn: fetchAllEvents,
         enabled: !!(unarchivedEvents || archivedEvents),
     });
-    const {
-        mutate: toggleArchivalMutation,
-        status: toggleArchivalStatus,
-        error: toggleArchivalError
-    } = useMutation({
-        mutationFn: (eventid: string) => {
-            return toggleEventArchival(eventid);
-        },
+    const toggleEventArchivalMutation = useMutation({
+        mutationFn: (eventid: string) => toggleEventArchival(eventid),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ "archived-events, unarchived-events" ]});
+            queryClient.invalidateQueries("archived-events")
+            queryClient.invalidateQueries("unarchived-events");
         },
     });
 
@@ -92,7 +79,7 @@ const AllEvents: React.FC = function() {
         events = arrayForGeneratingEvents.map(event => (
             <div key={event._id}>
                 <Link to={`/events/${event._id}`}><h2>{event.title}</h2></Link>
-                <button type="button" onClick={() => toggleArchivalMutation(event._id)}>{event.archived ? "Unarchive" : "Archive"}</button>
+                <button type="button" onClick={() => toggleEventArchivalMutation.mutate(event._id)}>{event.archived ? "Unarchive" : "Archive"}</button>
                 <p>{convert(event.body)}</p>
                 {generateDates(event.range, event.eventdates)}
             </div>
@@ -113,11 +100,11 @@ const AllEvents: React.FC = function() {
                     <option value="nextTwoWeeks">Next 14 days</option>
                     <option value="nextMonth">Next month</option>
                 </select>
-                {!archivedEventsVis && unarchivedEventsStatus === "success" ? 
-                    generateEvents(unarchivedEvents) : null
+                {!archivedEventsVis && unarchivedEvents.isSuccess ? 
+                    generateEvents(unarchivedEvents.data) : null
                 }
-                {archivedEventsVis && archivedEventsStatus === "success" ? 
-                    generateEvents(archivedEvents) : null
+                {archivedEventsVis && archivedEvents.isSuccess ? 
+                    generateEvents(archivedEvents.data) : null
                 }
             </div>
             <Link to="/events/create">Add Event</Link>

@@ -77,28 +77,41 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
     function generateStatChart() {
         const truncatedStats = truncateResults();
 
-        const chartLabel = `${stat === "battleRankings" ? "Battle Rankings" : "Contributions"}`;
         const data = {
             labels: truncatedStats?.map(stat => stat.week),
             datasets: [
                 {
-                    label: chartLabel,
-                    data: truncatedStats?.map(stat => stat.score),
-                    xAxisID: `${stat}-x-axis`,
-                    yAxisID: `${stat}-y-axis`,
-                    pointHoverBackgroundColor: "#000",
-                    pointHoverRadius: 5,
+                    data: truncatedStats?.map(stat => stat.score)
                 }
             ],
         };
-        return <Line ref={chartRef} id={`${stat}-chart`} data={data} onClick={handleChartClick} options={generateStatChartOptions(stat)}  />;
-    };
-
-    function generateStatChartOptions(stat: "battleRankings" | "contributions") {
-        return {
-            scales: {
+        return <Line ref={chartRef} id={`${stat}-chart`} data={data} onClick={handleChartClick} options={{
+            elements: {
+                point: {
+                    hoverRadius: 5,
+                    hoverBackgroundColor: "#000",
+                }
             },
-        };
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Week Number"
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: stat === "battleRankings" ? "Ranking" : "Contribution",
+                     }
+                }
+            }
+        }} />;
     };
 
     function handleChartClick(e: React.MouseEvent<HTMLCanvasElement>) {
@@ -130,11 +143,11 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
         <>
             <section>
                 <h2>{`${stat === "battleRankings" ? "Battle Ranking" : "Contribution"} Summary`}</h2>
-                {generateStatViewOptions()}
                 <div>
                     {pastYearStats.status === "loading" ? <p>Loading graph...</p> : null}
                     {pastYearStats.status === "success" ? generateStatChart() : null}
                 </div>
+                {generateStatViewOptions()}
             </section>
             {pastYearStats.status === "error" ? <p>{pastYearStats.error}</p> : null}
             {statsFormVis ? <StatsForm year={statsFormYear} week={statsFormWeek} currentMemberId={memberid} setStatsFormVis={setStatsFormVis} /> : null}

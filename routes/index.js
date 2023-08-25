@@ -188,7 +188,6 @@ router.get("/fetch-past-year-stats/:memberid", async function(req, res, next) {
       contributions = fillInMissingWeeks(week, year, contributions);
     };
 
-    console.log(battleRankings);
     res.status(200).json({ battleRankings, contributions });
   } catch(err) {
     console.error(err.message);

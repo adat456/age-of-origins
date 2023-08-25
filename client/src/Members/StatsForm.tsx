@@ -18,43 +18,31 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
     const [ statsFormWeek, setStatsFormWeek ] = useState(week);
 
     const queryClient = useQueryClient();
-    const { 
-            data: membersData, 
-            error: fetchMembersErr, 
-            status: fetchMembersStatus
-        } = useQuery({
+    const membersData  = useQuery({
             queryKey: [ "members", setCurrentMemberId ],
             queryFn: fetchMembers,
             enabled: !!setCurrentMemberId
     });
-    const { 
-            data: weekStats, 
-            fetchStatus: weekStatsFetchStatus 
-        } = useQuery({
+    const weekStats = useQuery({
             queryKey: [ `${currentMemberId}-stats`, currentMemberId, statsFormWeek, statsFormYear ],
             queryFn: () => fetchWeekStats({memberid: currentMemberId, week: statsFormWeek, year: statsFormYear})
     });
     useEffect(() => {
-        if (weekStats) {
-            setBattle(weekStats.battle);
-            setContribution(weekStats.contribution);
+        if (weekStats.data) {
+            setBattle(weekStats.data.battle);
+            setContribution(weekStats.data.contribution);
         };
-    }, [weekStats]);
-    const { 
-            mutate: mutateStats, 
-            data: updateStatsData, 
-            error: updateStatsError, 
-            status: updateStatsStatus, 
-            reset: resetMutationMsg 
-        } = useMutation({
+    }, [weekStats.data]);
+    const updateStatsMutation = useMutation({
             mutationFn: updateStats,
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: [ `${currentMemberId}-stats` ] })
+                queryClient.invalidateQueries(`${currentMemberId}-stats`);
+                queryClient.invalidateQueries(`${currentMemberId}-past-year-stats`);
             },
     });
 
     function generateMemberOptions() {
-        const members = membersData?.map(member => (
+        const members = membersData.data?.map(member => (
             <option key={member._id} value={member._id}>{member.username}</option>
         ));
         return members;
@@ -62,7 +50,7 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
 
     function saveStats() {
         if (currentMemberId) {
-            mutateStats({ 
+            updateStatsMutation.mutate({ 
                 memberid: currentMemberId, 
                 battle, contribution,
                 year: statsFormYear,
@@ -95,11 +83,11 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
 
                 {setCurrentMemberId ?
                     <>
-                        {fetchMembersStatus === "error" ? <p>{fetchMembersErr.message}</p> : null}
-                        {fetchMembersStatus === "success" ?
+                        {membersData.isError ? <p>{membersData.error}</p> : null}
+                        {membersData.isSuccess ?
                             <>
                                 <label htmlFor="currentMemberId">Select alliance member:</label>
-                                <select name="currentMemberId" id="currentMemberId" defaultValue={currentMemberId || undefined} onChange={(e) => {setCurrentMemberId(e.target.value); resetMutationMsg()}}>
+                                <select name="currentMemberId" id="currentMemberId" defaultValue={currentMemberId || undefined} onChange={(e) => {setCurrentMemberId(e.target.value); updateStatsMutation.reset()}}>
                                     <option value={undefined}></option>
                                     {generateMemberOptions()}
                                 </select>
@@ -117,9 +105,9 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
                     <input type="number" id="contribution" value={contribution} onChange={(e) => setContribution(Number(e.target.value))} min={1} required />
                 </div>
 
-                {updateStatsStatus === "loading" ? <p>Saving member's stats...</p> : null}
-                {updateStatsStatus === "error" ? <p>{updateStatsError.message}</p> : null}
-                {updateStatsStatus === "success" ? <p>{updateStatsData}</p> : null}
+                {updateStatsMutation.isLoading ? <p>Saving member's stats...</p> : null}
+                {updateStatsMutation.isError ? <p>{updateStatsMutation.error}</p> : null}
+                {updateStatsMutation.isSuccess ? <p>{updateStatsMutation.data}</p> : null}
 
                 <button type="button" onClick={saveStats}>Save</button>
                 <button type="button" onClick={() => {saveStats(); closeDialog();}}>Save and Close</button>
