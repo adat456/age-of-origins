@@ -8,34 +8,26 @@ const AnnouncementsList: React.FC = function() {
     const [ currentAnnouncementId, setCurrentAnnouncementId ] = useState("");
 
     const queryClient = useQueryClient();
-    const {
-        data: announcementsData,
-        error: announcementsDataError,
-        status: announcementsDataStatus
-    } = useQuery({
+    const announcements = useQuery({
         queryKey: [ "announcements" ],
         queryFn: fetchAnnouncements
     });
-    const {
-        mutate: editAnnouncementMutation,
-        error: editAnnouncementError,
-        status: editAnnouncementStatus
-    } = useMutation({
+    const editAnnouncementMutation = useMutation({
         mutationFn: (data: { announcementid: string, pinned: boolean}) => editAnnouncement(data),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: [ "announcements" ] })
+        onSuccess: () => queryClient.invalidateQueries("announcements")
     });
 
     function generateAnnouncementList() {
-        const announcementList = announcementsData?.map(announcement => (
+        const announcementList = announcements.data?.map(announcement => (
             <li key={announcement._id}>
                 <h3>{announcement.title}</h3>
                 <div>
                     <p>{announcement.pinned ? "Pinned" : "Not pinned"}</p>
-                    <button type="button" onClick={() => editAnnouncementMutation({ announcementid: announcement._id, pinned: !announcement.pinned})}>
+                    <button type="button" onClick={() => editAnnouncementMutation.mutate({ announcementid: announcement._id, pinned: !announcement.pinned})}>
                         {announcement.pinned ? "Unpin" : "Pin"}
                     </button>
-                    {editAnnouncementStatus === "error" ?
-                        <p>{editAnnouncementError.message}</p> : null
+                    {editAnnouncementMutation.isError ?
+                        <p>{editAnnouncementMutation.error}</p> : null
                     }
                 </div>
                 <p>{`Posted ${new Date(announcement.postdate).toISOString().slice(0, 10)} by ${announcement.author}`}</p>
@@ -62,13 +54,9 @@ const AnnouncementsList: React.FC = function() {
         <>
             <section>
                 <h2>Announcements</h2>
-                {announcementsDataStatus === "loading" ?
-                    <p>Fetching announcements...</p> : null
-                }
-                {announcementsDataStatus === "error" ?
-                    <p>{announcementsDataError.message}</p> : null
-                }
-                {announcementsDataStatus === "success" ?
+                {announcements.isLoading ? <p>Fetching announcements...</p> : null}
+                {announcements.isError ? <p>{ennouncements.error}</p> : null}
+                {announcements.isSuccess ?
                     <ul>
                         {generateAnnouncementList()}
                     </ul>

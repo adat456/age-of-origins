@@ -13,21 +13,17 @@ const TaggedReferences: React.FC = function() {
 
     const { tag } = useParams();
 
-    const {
-        data: allReferences,
-        error: allReferencesErr,
-        status: allReferencesStatus
-    } = useQuery({
+    const allReferences = useQuery({
         queryKey: [ "references" ],
         queryFn: fetchAllReferences
     });
 
     useEffect(() => {
-        if (allReferences && tag) {
+        if (allReferences.data && tag) {
             const decodedTag = decodeURIComponent(tag);
-            setTaggedReferences(allReferences.filter(ref => ref.tags.includes(decodedTag)));
+            setTaggedReferences(allReferences.data.filter(ref => ref.tags.includes(decodedTag)));
         };
-    }, [allReferences, tag]);
+    }, [allReferences.data, tag]);
 
     function generateReferences(referencesArr: referenceInterface[]) {
         const references = referencesArr?.map(ref => {
@@ -49,9 +45,9 @@ const TaggedReferences: React.FC = function() {
         <>
             <TagNav />
             <h2>{`${tag}: ${taggedReferences?.length} posts`}</h2>
-            {allReferencesStatus === "loading" ? <p>Loading tagged reference posts...</p> : null}
-            {allReferencesStatus === "error" ? <p>{allReferencesErr.message}</p> : null}
-            {allReferencesStatus === "success" ? 
+            {allReferences.isLoading ? <p>Loading tagged reference posts...</p> : null}
+            {allReferences.isError ? <p>{allReferences.error}</p> : null}
+            {allReferences.isSuccess ? 
                 <>
                     <SearchReferences references={taggedReferences} setSearchedReferences={setSearchedReferences} />
                     {!searchedReferences ?

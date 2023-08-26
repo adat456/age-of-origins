@@ -10,8 +10,7 @@ interface eventDatesFieldsetInterface {
     setEndDate: React.Dispatch<React.SetStateAction<string>>,
 };
 
-const EventDatesFieldset: React.FC<eventDatesFieldsetInterface> = function({ daterange, individualDates, setIndividualDates, startDate, setStartDate, endDate, setEndDate }) {
-
+const EventDatesFieldset: React.FC<eventDatesFieldsetInterface> = function({ daterange, individualDateId, setIndividualDateId, individualDates, setIndividualDates, startDate, setStartDate, endDate, setEndDate }) {
     function generateIndividualDateFields() {
         const individualDateFields = individualDates.map((date, index) => (
             <div key={date.id}>                                           

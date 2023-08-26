@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { convert } from "html-to-text";
-import { fetchAllEvents, fetchMembers, toggleEventArchival, editEvent } from "../Shared/sharedFunctions";
+import { fetchAllEvents, fetchMembers, toggleEventArchival, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import { eventInterface, memberInterface } from "../Shared/interfaces";
 
 const ExpandedEvent: React.FC = function() {
@@ -10,6 +10,8 @@ const ExpandedEvent: React.FC = function() {
     const [ matchingMembers, setMatchingMembers ] = useState<memberInterface[]>([]);
 
     const { eventid } = useParams();
+
+    const navigate = useNavigate();
 
     const queryClient = useQueryClient();
     const allEvents = useQuery({
@@ -21,19 +23,26 @@ const ExpandedEvent: React.FC = function() {
         queryFn: fetchMembers,
     });
     const toggleArchival = useMutation({
-        mutationFn: (eventid: string) => {
-            return toggleEventArchival(eventid);
-        },
+        mutationFn: (eventid: string) => toggleEventArchival(eventid),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ "archived-events, unarchived-events", "events" ]});
+            queryClient.invalidateQueries("archived-events");
+            queryClient.invalidateQueries("unarchived-events");
+            queryClient.invalidateQueries("events");
         },
     });
     const editEventMutation = useMutation({
-        mutationFn: (data: {eventid: string, title?: string, body?: string, range?: boolean, eventdates?: string[], participation?: string[]}) => {
-            return editEvent(data);
-        },
+        mutationFn: (data: {eventid: string, title?: string, body?: string, range?: boolean, eventdates?: string[], participation?: string[]}) =>  editEvent(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ "archived-events, unarchived-events", "events" ]});
+            queryClient.invalidateQueries("archived-events");
+            queryClient.invalidateQueries("unarchived-events");
+            queryClient.invalidateQueries("events");
+        },
+    });
+    const deleteEventMutation = useMutation({
+        mutationFn: () => deleteEvent(eventid),
+        onSuccess: () => {
+            queryClient.invalidateQueries("events");
+            navigate("/events");
         },
     });
 
@@ -95,7 +104,10 @@ const ExpandedEvent: React.FC = function() {
     return (
         <>
             <h2>{event?.title}</h2>
-            <Link to={`/events/${event?._id}/edit`}>Edit event</Link>
+            <div>
+                <Link to={`/events/${event?._id}/edit`}>Edit event</Link>
+                <button type="button" onClick={() => deleteEventMutation.mutate()}>Delete</button>
+            </div>
             <button type="button" onClick={() => toggleArchival.mutate(event?._id)}>{event?.archived ? "Unarchive" : "Archive"}</button>
             <p>{convert(event?.body)}</p>
             {generateDates(event?.range, event?.eventdates)}

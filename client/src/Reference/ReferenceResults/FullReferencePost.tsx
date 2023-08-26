@@ -10,21 +10,16 @@ const FullReferencePost: React.FC = function() {
 
     const { referenceid } = useParams();
 
-    const {
-        data: allReferences,
-        status: allReferencesStatus,
-        error: allReferencesErr
-    } = useQuery({
+    const allReferences = useQuery({
         queryKey: [ "references" ],
         queryFn: fetchAllReferences
     });
 
     useEffect(() => {
-        console.log(allReferences)
-        if (allReferences && referenceid) {
-            setCurrentReference(allReferences.find(reference => reference._id === referenceid));
+        if (allReferences.data && referenceid) {
+            setCurrentReference(allReferences.data.find(reference => reference._id === referenceid));
         };
-    }, [allReferences]);
+    }, [allReferences.data]);
 
     function generateTagLinks() {
         const tagLinks = currentReference?.tags.map(tag => (

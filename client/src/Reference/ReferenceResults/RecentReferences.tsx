@@ -5,17 +5,13 @@ import { fetchRecentReferences } from "../../Shared/sharedFunctions";
 import TagNav from "../ReferenceNav/TagNav";
 
 const RecentReferences: React.FC = function() {
-    const {
-        data: recentReferences,
-        error: recentReferencesErr,
-        status: recentReferencesStatus
-    } = useQuery({
+    const recentReferences = useQuery({
         queryKey: [ "recent-references" ],
         queryFn: fetchRecentReferences
     });
 
     function generateRecentReferencePosts() {
-        const references = recentReferences?.map(ref => {
+        const references = recentReferences.data?.map(ref => {
             const convertedReferenceBody = convert(ref.body);
 
             return (
@@ -34,12 +30,9 @@ const RecentReferences: React.FC = function() {
         <>
             <TagNav />
             <h2>Recent Posts</h2>
-            {recentReferencesStatus === "loading" ? <p>Loading recently added reference posts...</p> : null}
-            {recentReferencesStatus === "error" ? <p>{recentReferencesErr.message}</p> : null}
-            {recentReferencesStatus === "success" ? 
-                generateRecentReferencePosts() 
-                : null
-            }
+            {recentReferences.isLoading ? <p>Loading recently added reference posts...</p> : null}
+            {recentReferences.isError ? <p>{recentReferences.error}</p> : null}
+            {recentReferences.isSuccess ? generateRecentReferencePosts() : null}
         </>
     );
 };

@@ -12,35 +12,27 @@ const MemberForm: React.FC<memberFormInterface> = function({ setMemberFormVis })
     const [ firstname, setFirstname ] = useState("");
 
     const queryClient = useQueryClient();
-    const { data: membersData } = useQuery({
+    const members = useQuery({
         queryKey: [ "members" ],
         queryFn: fetchMembers
     });
-    const { 
-            mutate: addMember, 
-            status: addMemberStatus, 
-            error: addMemberError, 
-            data: addMemberData,
-            reset: resetAddMemberMsg
-        } = useMutation({
-            mutationFn: (memberData: { username: string, firstname: string }) => createMember(memberData),
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: [ "members" ]});
-            },
+    const addMemberMutation = useMutation({
+        mutationFn: (memberData: { username: string, firstname: string }) => createMember(memberData),
+        onSuccess: () => queryClient.invalidateQueries("members")
     });
 
     function handleUsernameChange(e: React.ChangeEvent<HTMLInputElement>) {
         const usernameInput = e.target as HTMLInputElement;
         setUsername(usernameInput.value);
 
-        resetAddMemberMsg();
+        addMemberMutation.reset();
 
         // check that trimmed username is not am empty string and that there are no duplicate usernames
         const trimmedUsername = usernameInput.value.trim();
         if (trimmedUsername === "") {
             setUsernameErrMsg("Required, must not include whitespace.");
         } else {
-            const matchingUsername = membersData?.find(existingMember => existingMember.username.toLowerCase() === trimmedUsername.toLowerCase());
+            const matchingUsername = members.data?.find(existingMember => existingMember.username.toLowerCase() === trimmedUsername.toLowerCase());
             if (matchingUsername) {
                 setUsernameErrMsg("This username already exists. Please enter a different username.");
             } else {
@@ -55,8 +47,8 @@ const MemberForm: React.FC<memberFormInterface> = function({ setMemberFormVis })
         const trimmedUsername = username.trim();
         const trimmedFirstname = firstname.trim();
 
-        if (!usernameErrMsg && addMemberStatus !== "loading") {
-            addMember({ username: trimmedUsername, firstname: trimmedFirstname });
+        if (!usernameErrMsg && !addMemberMutation.isLoading) {
+            addMemberMutation.mutate({ username: trimmedUsername, firstname: trimmedFirstname });
             resetFields();
         };
     };
@@ -87,9 +79,9 @@ const MemberForm: React.FC<memberFormInterface> = function({ setMemberFormVis })
                 </div>
                 <button type="submit">Submit</button>
                 <button type="button" onClick={closeDialog}>Close</button>
-                {addMemberStatus === "loading" ? <p>Adding member...</p> : null}
-                {addMemberStatus === "error" ? <p>{addMemberError.message}</p> : null}
-                {addMemberStatus === "success" ? <p>{addMemberData}</p> : null}
+                {addMemberMutation.isLoading ? <p>Adding member...</p> : null}
+                {addMemberMutation.isError ? <p>{addMemberMutation.error}</p> : null}
+                {addMemberMutation.isSuccess ? <p>{addMemberMutation.data}</p> : null}
             </form>
         </dialog>
     );

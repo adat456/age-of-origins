@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { convert } from "html-to-text";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchAllEvents, addEvent, editEvent } from "../Shared/sharedFunctions";
+import { fetchAllEvents, addEvent, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import EventDatesFieldset from "./EventDatesFieldset";
 
 const EventForm: React.FC = function() {
@@ -23,16 +23,14 @@ const EventForm: React.FC = function() {
 
     const { eventid} = useParams();
 
+    const navigate = useNavigate();
+
     const queryClient = useQueryClient();
     const allEvents = useQuery({
         queryKey: [ "events" ],
         queryFn: fetchAllEvents
     });
-    const {
-        mutate: addEventMutation,
-        status: addEventStatus,
-        error: addEventErr
-    } = useMutation({
+    const addEventMutation = useMutation({
         mutationFn: () => addEvent({
             author: "64d69b49a8599d958bc51e57",
             title, body,
@@ -41,8 +39,9 @@ const EventForm: React.FC = function() {
                 [startDate, endDate] :
                 individualDates.map(date => date.date)
         }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ "events" ]});
+        onSuccess: (data) => {
+            queryClient.invalidateQueries("events");
+            navigate(`/events/${data}`);
         },
     });
     const editEventMutation = useMutation({
@@ -54,9 +53,17 @@ const EventForm: React.FC = function() {
             individualDates.map(date => date.date)
         }),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [ "events" ]});
+            queryClient.invalidateQueries("events");
+            navigate(`/events/${eventid}`);
         },
-    })
+    });
+    const deleteEventMutation = useMutation({
+        mutationFn: () => deleteEvent(eventid),
+        onSuccess: () => {
+            queryClient.invalidateQueries("events");
+            navigate("/events");
+        },
+    });
 
     useEffect(() => {
         if (eventid && allEvents.data) {
@@ -108,9 +115,9 @@ const EventForm: React.FC = function() {
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        if (!eventid && addEventStatus !== "loading") {
-            addEventMutation();
-        } else if (eventid && editEventMutation.status !== "loading") {
+        if (!eventid && !addEventMutation.isLoading) {
+            addEventMutation.mutate();
+        } else if (eventid && !editEventMutation.isLoading) {
             editEventMutation.mutate();
         };
     };
@@ -135,8 +142,11 @@ const EventForm: React.FC = function() {
             </div>
             <button type="button" onClick={() => setDaterange(!daterange)}>{daterange ? "Setting dates by range" : "Setting dates individually"}</button>
             <EventDatesFieldset daterange={daterange} individualDateId={individualDateId} setIndividualDateId={setIndividualDateId} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
-            <button type="reset" onClick={clearAllFields}>Clear</button>
-            <button type="submit">{!eventid ? "Create" : "Submit edits"}</button>
+            <div>
+                <button type="reset" onClick={clearAllFields}>Clear</button>
+                <button type="submit">{!eventid ? "Create" : "Submit edits"}</button>
+                {eventid ? <button type="button" onClick={() => deleteEventMutation.mutate()}>Delete</button> : null}
+            </div>
         </form>
     );
 };

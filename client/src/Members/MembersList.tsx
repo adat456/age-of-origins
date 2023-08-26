@@ -13,20 +13,20 @@ const MembersList: React.FC = function() {
     const year = getYear(today);
     const week = getWeek(today, { weekStartsOn: 6 });
 
-    const { data: membersData, error: membersErr, status: fetchMembersStatus } = useQuery({
+    const members = useQuery({
         queryKey: [ "members" ],
         queryFn: fetchMembers
     });
 
     function generateMembers() {
-        const members = membersData?.map(member => (
+        const membersArr = members.data?.map(member => (
             <li key={member._id}>
                 <p>{member.username}</p>
                 <Link to={`/members/${member._id}`}>View summary</Link>
                 <button type="button" onClick={() => {setCurrentMemberId(member._id); setStatsFormVis(true);}}>Add stats</button>
             </li>
         ));
-        return members;
+        return membersArr;
     };
 
     useEffect(() => {
@@ -40,9 +40,9 @@ const MembersList: React.FC = function() {
         <>
             <button type="button" onClick={() => setStatsFormVis(true)}>Add stats for all members</button>
             <ul>
-                {fetchMembersStatus === "loading" ? <p>Loading list of members...</p> : null}
-                {fetchMembersStatus === "error" ? <p>{membersErr.message}</p> : null}
-                {fetchMembersStatus === "success" ? generateMembers() : null}
+                {members.isLoading ? <p>Loading list of members...</p> : null}
+                {members.isError ? <p>{members.error}</p> : null}
+                {members.isSuccess ? generateMembers() : null}
             </ul>
             {statsFormVis ? <StatsForm year={year} week={week} currentMemberId={currentMemberId} setCurrentMemberId={setCurrentMemberId} setStatsFormVis={setStatsFormVis} /> : null}
         </>

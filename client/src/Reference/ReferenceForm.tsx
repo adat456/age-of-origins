@@ -17,60 +17,45 @@ const ReferenceForm: React.FC = function() {
     const navigate = useNavigate();
 
     const queryClient = useQueryClient();
-    const {
-        data: existingTags,
-        status: existingTagsStatus,
-        error: existingTagsError
-    } = useQuery({
+    const existingTags = useQuery({
         queryKey: [ "tags" ],
         queryFn: fetchExistingTags
     });
-    const {
-        data: allReferencesData,
-        status: allReferencesStatus,
-        error: allReferencesError
-    } = useQuery({
+    const allReferences = useQuery({
         queryKey: [ "references" ],
         queryFn: fetchAllReferences
     });
     useEffect(() => {
-        if (referenceid && allReferencesData) {
-            const matchingReference = allReferencesData.find(reference => reference._id === referenceid);
+        if (referenceid && allReferences.data) {
+            const matchingReference = allReferences.data.find(reference => reference._id === referenceid);
             if (matchingReference) {
                 setTitle(matchingReference.title);
                 setBody(matchingReference.body);
                 setTags(matchingReference.tags);
             };
         };
-    }, [allReferencesData, referenceid])
-    const {
-        mutate: addReferenceMutation,
-        status: addReferenceStatus,
-        data: newlyAddedReferenceId,
-        error: addReferenceError
-    } = useMutation({
+    }, [allReferences.data, referenceid])
+    const addReferenceMutation = useMutation({
         mutationFn: () => addReference({ author: "64d69b49a8599d958bc51e57", title, body, tags }),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: [ "references", "tags" ]});
+        onSuccess: (data) => {
+            queryClient.invalidateQueries("references");
+            queryClient.invalidateQueries("tags");
+            navigate(`/reference/post/${data}`)
         },
     });
-    const {
-        mutate: editReferenceMutation,
-        status: editReferenceStatus,
-        error: editReferenceError
-    } = useMutation({
+    const editReferenceMutation = useMutation({
         mutationFn: () => editReference({ referenceid, title, body, tags }),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: [ "references", "tags" ]});
+        onSuccess: () => {
+            queryClient.invalidateQueries("references");
+            queryClient.invalidateQueries("tags");
             navigate(`/reference/post/${referenceid}`);
         },
     });
-    const {
-        mutate: deleteReferenceMutation
-    } = useMutation({
+    const deleteReferenceMutation = useMutation({
         mutationFn: () => deleteReference(referenceid),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: [ "references" ]});
+        onSuccess: () => {
+            queryClient.invalidateQueries("references");
+            queryClient.invalidateQueries("tags");
             navigate("/reference");
         },
     });
@@ -80,7 +65,7 @@ const ReferenceForm: React.FC = function() {
 
         const cleanedValue = e.target.value.trim().toLowerCase();
         if (existingTags && cleanedValue) {
-            setTagResults(existingTags.filter(tag => tag.includes(cleanedValue)));
+            setTagResults(existingTags.data.filter(tag => tag.includes(cleanedValue)));
         } else {
             setTagResults([]);
         };
@@ -95,7 +80,7 @@ const ReferenceForm: React.FC = function() {
     };
     function handleCreateTagClick() {
         const cleanedTag = tag.trim().toLowerCase();
-        if (!existingTags?.includes(cleanedTag)) {
+        if (!existingTags.data.includes(cleanedTag)) {
             setTags([...tags, tag.trim().toLowerCase()]);
             setTag("");
         } else {
@@ -114,16 +99,12 @@ const ReferenceForm: React.FC = function() {
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
-        if (!referenceid) {
-            addReferenceMutation();
-        } else {
-            editReferenceMutation();
+        if (!referenceid && !addReferenceMutation.isLoading) {
+            addReferenceMutation.mutate();
+        } else if (referenceid && !editReferenceMutation.isLoading) {
+            editReferenceMutation.mutate();
         };
     };
-    // the new id of a new post does not automatically return, so useEffect listens for it before navigating to the post
-    useEffect(() => {
-        if (newlyAddedReferenceId) navigate(`/reference/post/${newlyAddedReferenceId}`);
-    }, [newlyAddedReferenceId]);
 
     return (
         <>
@@ -142,7 +123,7 @@ const ReferenceForm: React.FC = function() {
                     {generateTagResults()}
                 </div>
                 <button type="submit">{!referenceid ? "Post" : "Save edits"}</button>
-                <button type="button" onClick={deleteReferenceMutation}>Delete reference</button>
+                <button type="button" onClick={() => deleteReferenceMutation.mutate()}>Delete reference</button>
             </form>
         </>
     );

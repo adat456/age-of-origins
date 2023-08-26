@@ -15,44 +15,30 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
     const [ pinned, setPinned ] = useState(false);
 
     const queryClient = useQueryClient();
-    const {
-        data: announcementsData,
-    } = useQuery({
+    const announcements = useQuery({
         queryKey: [ "announcements" ],
         queryFn: fetchAnnouncements
     });
     useEffect(() => {
-        if (announcementsData && announcementid) {
-            const matchingAnnouncement = announcementsData.find(announcement => announcement._id === announcementid);
+        if (announcements.data && announcementid) {
+            const matchingAnnouncement = announcements.data.find(announcement => announcement._id === announcementid);
             setTitle(matchingAnnouncement?.title);
             setBody(matchingAnnouncement?.body);
             setPinned(matchingAnnouncement?.pinned);
         };
-    }, [announcementsData]);
+    }, [announcements.data]);
 
-    const {
-            mutate: addAnnouncementMutation,
-            error: addAnnouncementErrorMsg,
-            status: addAnnouncementStatus
-    } = useMutation({
+    const addAnnouncementMutation = useMutation({
             mutationFn: () => addAnnouncement({ author: "64d69b49a8599d958bc51e57", title, body, pinned }),
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: [ "announcements" ] })
+            onSuccess: () => queryClient.invalidateQueries("announcements")
     });
-    const {
-        mutate: editAnnouncementMutation,
-        error: editAnnouncementErrorMsg,
-        status: editAnnouncementStatus
-    } = useMutation({
+    const editAnnouncementMutation = useMutation({
         mutationFn: () => editAnnouncement({ announcementid, title, body, pinned }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: [ "announcements" ] })
+        onSuccess: () => queryClient.invalidateQueries("announcements")
     });
-    const {
-        mutate: deleteAnnouncementMutation,
-        error: deleteAnnouncementErrorMsg,
-        status: deleteAnnouncementStatus
-    } = useMutation({
+    const deleteAnnouncementMutation = useMutation({
         mutationFn: (announcementid: string) => deleteAnnouncement(announcementid),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: [ "announcements" ]})
+        onSuccess: () => queryClient.invalidateQueries("announcements")
     });
 
     function handleTextInput(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -91,21 +77,21 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
         if (!title || !body) return;
 
         if (!announcementid) {
-            if (addAnnouncementStatus !== "loading") {
-                addAnnouncementMutation();
+            if (!addAnnouncementMutation.isLoading) {
+                addAnnouncementMutation.mutate();
                 handleClose();
             };
         } else {
-            if (editAnnouncementStatus !== "loading") {
-                editAnnouncementMutation();
+            if (!editAnnouncementMutation.isLoading) {
+                editAnnouncementMutation.mutate();
                 handleClose();
             };
         };
     };
 
     function handleDelete() {
-        if (deleteAnnouncementStatus !== "loading") {
-            deleteAnnouncementMutation(announcementid);
+        if (!deleteAnnouncementMutation.isLoading && announcementid) {
+            deleteAnnouncementMutation.mutate(announcementid);
             handleClose();
         };
     };
@@ -134,20 +120,20 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
                     <label htmlFor="pinned">Pin announcement to top</label>
                 </div>
                 {announcementid ?
-                    addAnnouncementStatus === "error" ?
-                        <p>{addAnnouncementErrorMsg.message}</p>
+                    addAnnouncementMutation.isError ?
+                        <p>{addAnnouncementMutation.error}</p>
                         : null
                     :
-                    editAnnouncementStatus === "error" ?
-                        <p>{editAnnouncementErrorMsg.message}</p>
+                    editAnnouncementMutation.isError ?
+                        <p>{editAnnouncementMutation.error}</p>
                         : null
                 }
                 <button type="submit">{announcementid ? "Confirm edits" : "Post"}</button>
                 {announcementid ?
                     <button type="button" onClick={handleDelete}>Delete post</button> : null
                 }
-                {deleteAnnouncementStatus === "error" ?
-                    <p>{deleteAnnouncementErrorMsg.message}</p> : null
+                {deleteAnnouncementMutation.isError ?
+                    <p>{deleteAnnouncementMutation.error}</p> : null
                 }
                 <button type="button" onClick={handleClose}>Close</button>
             </form>

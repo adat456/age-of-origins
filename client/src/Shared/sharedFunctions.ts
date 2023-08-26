@@ -262,3 +262,12 @@ export async function editEvent(data: {eventid: string, title?: string, body?: s
         throw new Error(await req.json())
     };
 };
+
+export async function deleteEvent(eventid: string) {
+    const req = await fetch(`http://localhost:3001/delete-event/${eventid}`, { method: "DELETE" });
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};

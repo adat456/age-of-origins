@@ -19,13 +19,13 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
 
     const queryClient = useQueryClient();
     const membersData  = useQuery({
-            queryKey: [ "members", setCurrentMemberId ],
-            queryFn: fetchMembers,
-            enabled: !!setCurrentMemberId
+        queryKey: [ "members", setCurrentMemberId ],
+        queryFn: fetchMembers,
+        enabled: !!setCurrentMemberId
     });
     const weekStats = useQuery({
-            queryKey: [ `${currentMemberId}-stats`, currentMemberId, statsFormWeek, statsFormYear ],
-            queryFn: () => fetchWeekStats({memberid: currentMemberId, week: statsFormWeek, year: statsFormYear})
+        queryKey: [ `${currentMemberId}-stats`, currentMemberId, statsFormWeek, statsFormYear ],
+        queryFn: () => fetchWeekStats({memberid: currentMemberId, week: statsFormWeek, year: statsFormYear})
     });
     useEffect(() => {
         if (weekStats.data) {
@@ -34,11 +34,11 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
         };
     }, [weekStats.data]);
     const updateStatsMutation = useMutation({
-            mutationFn: updateStats,
-            onSuccess: () => {
-                queryClient.invalidateQueries(`${currentMemberId}-stats`);
-                queryClient.invalidateQueries(`${currentMemberId}-past-year-stats`);
-            },
+        mutationFn: updateStats,
+        onSuccess: () => {
+            queryClient.invalidateQueries(`${currentMemberId}-stats`);
+            queryClient.invalidateQueries(`${currentMemberId}-past-year-stats`);
+        },
     });
 
     function generateMemberOptions() {

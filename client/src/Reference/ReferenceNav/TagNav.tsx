@@ -3,17 +3,13 @@ import { Link } from "react-router-dom";
 import { fetchExistingTags } from "../../Shared/sharedFunctions";
 
 const TagNav: React.FC = function() {
-    const {
-        data: existingTags,
-        error: existingTagsErr,
-        status: existingTagsStatus
-    } = useQuery({
+    const existingTags = useQuery({
         queryKey: [ "tags" ],
         queryFn: fetchExistingTags,
     });
 
     function generateTagLinks() {
-        const tagLinks = existingTags?.map(tag => (
+        const tagLinks = existingTags.data?.map(tag => (
             <Link key={tag} to={`/reference/tag/${encodeURIComponent(tag)}`}>{tag}</Link>
         ));
         return tagLinks;
@@ -21,9 +17,9 @@ const TagNav: React.FC = function() {
 
     return (
         <nav>
-            {existingTagsStatus === "loading" ? <p>Loading tags...</p> : null}
-            {existingTagsStatus === "error" ? <p>{existingTagsErr.message}</p> : null}
-            {existingTagsStatus === "success" ? 
+            {existingTags.isLoading ? <p>Loading tags...</p> : null}
+            {existingTags.isError ? <p>{existingTags.error}</p> : null}
+            {existingTags.isSuccess ? 
                 <>
                     {generateTagLinks()}
                 </> : null}

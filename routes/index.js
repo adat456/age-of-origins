@@ -498,4 +498,16 @@ router.patch("/edit-event", async function(req, res, next) {
   };
 });
 
+router.delete("/delete-event/:eventid", async function(req, res, next) {
+  const { eventid } = req.params;
+
+  try {
+    await EventModel.deleteOne({ _id: eventid });
+    res.status(200).json("Event deleted.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 module.exports = router;
