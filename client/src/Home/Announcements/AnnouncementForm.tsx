@@ -29,7 +29,7 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
     }, [announcements.data]);
 
     const addAnnouncementMutation = useMutation({
-            mutationFn: () => addAnnouncement({ author: "64d69b49a8599d958bc51e57", title, body, pinned }),
+            mutationFn: () => addAnnouncement({ author: "64eab06d7b23b17452484e6c", title, body, pinned }),
             onSuccess: () => queryClient.invalidateQueries("announcements")
     });
     const editAnnouncementMutation = useMutation({
