@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { startOfWeek, endOfWeek } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchMembers, fetchWeekStats, updateStats } from "../Shared/sharedFunctions";
 
@@ -41,6 +42,13 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
         },
     });
 
+    function generateWeekStartAndEnd() {
+        const today = new Date();
+        const weekStart = startOfWeek(today, { weekStartsOn: 6 }).toISOString().slice(0, 10);
+        const weekEnd = endOfWeek(today, { weekStartsOn: 6 }).toISOString().slice(0, 10);
+        return `${weekStart} - ${weekEnd}`;
+    };
+
     function generateMemberOptions() {
         const members = membersData.data?.map(member => (
             <option key={member._id} value={member._id}>{member.username}</option>
@@ -74,6 +82,7 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
                     <div>
                         <label htmlFor="statsFormWeek">Week</label>
                         <input type="number" name="statsFormWeek" id="statsFormWeek" value={statsFormWeek} onChange={(e) => setStatsFormWeek(Number(e.target.value))} min={1} max={52} required />
+                        <p></p>
                     </div>
                     <div>
                         <label htmlFor="statsFormYear">Year</label>

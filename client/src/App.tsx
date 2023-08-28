@@ -14,6 +14,7 @@ import EventsHome from "./Events/EventsHome";
 import EventForm from "./Events/EventForm";
 import AllEvents from "./Events/AllEvents";
 import ExpandedEvent from "./Events/ExpandedEvent";
+import Scoreboard from "./Home/Scoreboard";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Wrapper child={<NavBar />} />}>
             <Route index element={<HomeWrapper />} />
+            <Route path="battle-rankings" element={<Scoreboard stat="battle" />} />
+            <Route path="contribution-rankings" element={<Scoreboard stat="contribution" />} />
             <Route path="/events" element={<EventsHome />}>
               <Route index element={<AllEvents />} />
               <Route path="create" element={<EventForm />} />

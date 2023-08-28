@@ -81,7 +81,41 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
             labels: truncatedStats?.map(stat => stat.week),
             datasets: [
                 {
-                    data: truncatedStats?.map(stat => stat.score)
+                    data: truncatedStats?.map(stat => stat.score),
+                    pointBackgroundColor: () => {
+                        let pointColorsArr = ["black"];
+
+                        const statArr = pastYearStats.data[stat === "battleRankings" ? "battleRankings" : "contributions"];
+                        statArr.forEach((currentDataPoint, index) => {
+                            if (index == 0) return;
+
+                            const priorDataPoint = statArr[index - 1];
+                            if (!priorDataPoint.score) {
+                                pointColorsArr.push("black");
+                                return;
+                            };
+                
+                            if (currentDataPoint.score >= priorDataPoint.nextgoal) {
+                                pointColorsArr.push("black");
+                            } else {
+                                pointColorsArr.push("red");
+                            };
+                        });
+
+                        switch (statView) {
+                            case "month":
+                                pointColorsArr = pointColorsArr.slice(-4);
+                                break;
+                            case "quarteryear":
+                                pointColorsArr = pointColorsArr.slice(-13);
+                                break;
+                            case "halfyear":
+                                pointColorsArr = pointColorsArr.slice(-26);
+                                break;
+                        };
+
+                        return pointColorsArr;
+                    },
                 }
             ],
         };
@@ -95,7 +129,26 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
             plugins: {
                 legend: {
                     display: false
-                }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: (tooltip) => `Week ${tooltip[0].label}`,
+                        label: (tooltip) => { 
+                            if (tooltip.element.options.backgroundColor === "red") {
+                                return `${tooltip.formattedValue} - Did not meet goal`
+                            } else {
+                                return tooltip.formattedValue;
+                            };
+                        },
+                        labelColor: (tooltip) => {
+                            console.log(tooltip);
+                            return {
+                                borderColor: tooltip.element.options.backgroundColor,
+                                backgroundColor: tooltip.element.options.backgroundColor
+                            };
+                        },
+                    },
+                },
             },
             scales: {
                 x: {
@@ -107,7 +160,7 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
                 y: {
                     title: {
                         display: true,
-                        text: stat === "battleRankings" ? "Ranking" : "Contribution",
+                        text: stat === "battleRankings" ? "Battle Power" : "Contribution",
                      }
                 }
             }
@@ -142,7 +195,7 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
     return (
         <>
             <section>
-                <h2>{`${stat === "battleRankings" ? "Battle Ranking" : "Contribution"} Summary`}</h2>
+                <h2>{`${stat === "battleRankings" ? "Battle Power" : "Contribution"} History`}</h2>
                 <div>
                     {pastYearStats.status === "loading" ? <p>Loading graph...</p> : null}
                     {pastYearStats.status === "success" ? generateStatChart() : null}

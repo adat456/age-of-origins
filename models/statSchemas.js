@@ -15,39 +15,32 @@ const BattleSchema = new Schema({
     score: {
         type: Number,
         min: 1,
+        max: 99999999,
         required: true,
     },
     member: {
         type: mongoose.Types.ObjectId,
         ref: "Member"
     }
-});
-const BattleModel = mongoose.model("Battle", BattleSchema);
+}, { toJSON: { virtuals: true} });
 
-BattleSchema.virtual("goal").get(function() {
+// BattleSchema.virtual("previousgoal").get(function() {
+//     let returnValue = "No previous goal found.";
+//     return BattleModel.findOne({  
+//         week: this.week == 1 ? 52 : this.week - 1,
+//         year:  this.week == 1 ? this.year - 1 : this.year,
+//         member: this.member
+//     }).then((lastWeeksBattleScore) => {
+//         if (lastWeeksBattleScore) returnValue = lastWeeksBattleScore.score;
+//     }).catch(err => console.log(err))
+//     .finally(() => returnValue);
+// });
+
+BattleSchema.virtual("nextgoal").get(function() {
     return Math.round(this.score * 1.03);
 });
 
-BattleSchema.virtual("priorTrend").get(async function() {
-    try {
-        const lastWeeksBattleScore = await BattleModel.find({  
-            week: this.week == 1 ? 52 : this.week - 1,
-            year:  this.week == 1 ? this.year - 1 : this.year,
-            member: this.member
-        }, "score");
-        if (lastWeeksBattleScore.length > 0) {
-            lastWeeksScore = lastWeeksBattleScore[0].score;
-            return {
-                lastWeeksScore,
-                trend: ((this.score - lastWeeksScore)/lastWeeksScore) * 100
-            };
-        } else {
-            return "No score found from last week.";
-        };
-    } catch(err) {
-        console.error("Unable to perform query for previous week's battle score.");
-    };
-});
+const BattleModel = mongoose.model("Battle", BattleSchema);
 
 const ContributionSchema = new Schema({
     year: {
@@ -63,6 +56,7 @@ const ContributionSchema = new Schema({
     score: {
         type: Number,
         min: 1,
+        max: 99999,
         required: true,
     },
     member: {
