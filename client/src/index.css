@@ -1,4 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+    .primary-btn {
+        @apply bg-red hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded p-8 text-offwhite
+    }
+    .secondary-btn {
+        @apply text-offwhite underline underline-offset-8 decoration-red hover:decoration-mutedred focus:decoration-mutedred decoration-[3px]
+    }
+    .link {
+        @apply text-lightest hover:text-offwhite focus:text-offwhite underline underline-offset-4
+    }
+    .input {
+        @apply bg-offwhite rounded-sm pl-4 focus:border-light focus:border-2
+    }
+}

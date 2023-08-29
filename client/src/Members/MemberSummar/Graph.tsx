@@ -41,13 +41,13 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
         const optionLabels = ["Past month", "Past 3 months", "Past 6 months", "Past year"];
 
         const optionRadios = options.map((option, index) => (
-            <div key={`${stat}-${option}`}>
+            <div key={`${stat}-${option}`} className="my-4">
                 <input type="radio" name={statView} id={`${stat}-${option}`} value={option} checked={statView === option} onChange={(e) => setStatView(e.target.value)} />
-                <label htmlFor={`${stat}-${option}`}>{optionLabels[index]}</label>
+                <label htmlFor={`${stat}-${option}`} className="text-offwhite">{optionLabels[index]}</label>
             </div>
         ));
         return (
-            <form>
+            <form className="grid grid-cols-2 mt-16">
                 {optionRadios}
             </form>
         );
@@ -83,7 +83,7 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
                 {
                     data: truncatedStats?.map(stat => stat.score),
                     pointBackgroundColor: () => {
-                        let pointColorsArr = ["black"];
+                        let pointColorsArr = ["white"];
 
                         const statArr = pastYearStats.data[stat === "battleRankings" ? "battleRankings" : "contributions"];
                         statArr.forEach((currentDataPoint, index) => {
@@ -91,12 +91,12 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
 
                             const priorDataPoint = statArr[index - 1];
                             if (!priorDataPoint.score) {
-                                pointColorsArr.push("black");
+                                pointColorsArr.push("white");
                                 return;
                             };
                 
                             if (currentDataPoint.score >= priorDataPoint.nextgoal) {
-                                pointColorsArr.push("black");
+                                pointColorsArr.push("white");
                             } else {
                                 pointColorsArr.push("red");
                             };
@@ -154,14 +154,44 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
                 x: {
                     title: {
                         display: true,
-                        text: "Week Number"
-                    }
+                        text: "Week Number",
+                        color: "#E0E3EB",
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        }
+                    },
+                    grid: {
+                        color: "#A3AAC2"
+                    },
+                    ticks: {
+                        color: "#A3AAC2",
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        }
+                    },
                 },
                 y: {
                     title: {
                         display: true,
                         text: stat === "battleRankings" ? "Battle Power" : "Contribution",
-                     }
+                        color: "#E0E3EB",
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        }
+                    },
+                    grid: {
+                        color: "#A3AAC2"
+                    },
+                    ticks: {
+                        color: "#A3AAC2",
+                        font: {
+                            size: 14,
+                            weight: "bold"
+                        }
+                    },
                 }
             }
         }} />;
@@ -194,8 +224,8 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
 
     return (
         <>
-            <section>
-                <h2>{`${stat === "battleRankings" ? "Battle Power" : "Contribution"} History`}</h2>
+            <section className="bg-dark p-16 pt-8 my-24 rounded">
+                <h3 className="text-offwhite my-16 text-xl font-bold tracking-wide text-center">{`${stat === "battleRankings" ? "Battle Power" : "Contribution"} History`}</h3>
                 <div>
                     {pastYearStats.status === "loading" ? <p>Loading graph...</p> : null}
                     {pastYearStats.status === "success" ? generateStatChart() : null}

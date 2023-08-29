@@ -15,6 +15,7 @@ import EventForm from "./Events/EventForm";
 import AllEvents from "./Events/AllEvents";
 import ExpandedEvent from "./Events/ExpandedEvent";
 import Scoreboard from "./Home/Scoreboard";
+import MembersList from "./Members/MembersList";
 
 const queryClient = new QueryClient();
 
@@ -37,13 +38,12 @@ function App() {
             <Route path="/reference" element={<ReferenceHome />}>
               <Route index element={<RecentReferences />} />
               <Route path="tag/:tag" element={<TaggedReferences />} />
-              
               <Route path="post/:referenceid/edit" element={<ReferenceForm />} />
               <Route path="post/:referenceid" element={<FullReferencePost />} />
               <Route path="create" element={<ReferenceForm />} />
             </Route>
-            <Route path="/members" element={<Wrapper />}>
-              <Route index element={<MembersPage />} />
+            <Route path="/members" element={<MembersPage />}>
+              <Route index element={<MembersList />} />
               <Route path=":memberid" element={<MemberSummary />} />
             </Route>
           </Route>

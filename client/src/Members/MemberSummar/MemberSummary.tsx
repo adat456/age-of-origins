@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchMembers } from "../../Shared/sharedFunctions";
 import Graph from "./Graph";
@@ -9,6 +9,8 @@ const MemberSummary: React.FC = function() {
     const [ member, setMember ] = useState<memberInterface | undefined>(undefined);
 
     const { memberid } = useParams();
+    const location = useLocation();
+    const { pageNum } = location.state;
 
     const membersData = useQuery({
         queryKey: [ "members" ],
@@ -24,8 +26,8 @@ const MemberSummary: React.FC = function() {
     return (
         <>
             <section>
-                <Link to="/members">Return to all members</Link>
-                <h1>{`${member?.username}`}</h1>
+                <Link to="/members" state={{ pageNum }} className="link">Back to members</Link>
+                <h2 className="text-offwhite mt-24 mb-16 text-2xl font-bold tracking-wide text-center">{`${member?.username}`}</h2>
                 <Graph stat="battleRankings" />
                 <Graph stat="contributions" />
             </section>

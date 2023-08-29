@@ -6,9 +6,9 @@ const NavBar: React.FC = function() {
 
     return (
         <>
-            <header className="flex p-24 justify-between shadow-navshadow">
-                <h1></h1>
-                <button onClick={() => setNavOpen(true)} className="z-0">
+            <header className="flex p-24 mb-16 justify-between items-center shadow-2xl">
+                <h1 className="font-alfa text-2xl text-offwhite tracking-widest">AGE OF ORIGINS</h1>
+                <button onClick={() => setNavOpen(true)}>
                     <svg width="2rem" height="2rem" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none"><path stroke="#E0E3EB" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8h22M5 16h22M5 24h22"/></svg>
                 </button>
             </header>

@@ -75,52 +75,52 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
     };
 
     return (
-        <dialog className="stats-form-dialog">
+        <dialog className="stats-form-dialog bg-darkest p-24">
             <form method="POST" className="stats-form" noValidate>
-                <h1>Add stats</h1>
-                <div>
-                    <div>
-                        <label htmlFor="statsFormWeek">Week</label>
-                        <input type="number" name="statsFormWeek" id="statsFormWeek" value={statsFormWeek} onChange={(e) => setStatsFormWeek(Number(e.target.value))} min={1} max={52} required />
-                        <p></p>
-                    </div>
-                    <div>
-                        <label htmlFor="statsFormYear">Year</label>
-                        <input type="number" name="statsFormYear" id="statsFormYear" value={statsFormYear} onChange={(e) => setStatsFormYear(Number(e.target.value))} min={2020} max={2030} required />
-                    </div>
-                </div>
-
+                <h1 className="text-offwhite text-center text-xl font-bold tracking-wide mb-16">Add stats</h1>
                 {setCurrentMemberId ?
                     <>
                         {membersData.isError ? <p>{membersData.error}</p> : null}
                         {membersData.isSuccess ?
-                            <>
-                                <label htmlFor="currentMemberId">Select alliance member:</label>
-                                <select name="currentMemberId" id="currentMemberId" defaultValue={currentMemberId || undefined} onChange={(e) => {setCurrentMemberId(e.target.value); updateStatsMutation.reset()}}>
+                            <div className="my-4">
+                                <label htmlFor="currentMemberId" className="text-offwhite block mb-4">Alliance member:</label>
+                                <select name="currentMemberId" id="currentMemberId" defaultValue={currentMemberId || undefined} onChange={(e) => {setCurrentMemberId(e.target.value); updateStatsMutation.reset()}} className="input">
                                     <option value={undefined}></option>
                                     {generateMemberOptions()}
                                 </select>
-                            </> : null
+                            </div> : null
                         }
                     </> : null
                 }
-
-                <div>
-                    <label htmlFor="battle">Battle Power</label>
-                    <input type="number" id="battle" value={battle} onChange={(e) => setBattle(Number(e.target.value))} min={1} required />
+                <div className="grid grid-cols-2 my-8">
+                    <div>
+                        <label htmlFor="statsFormWeek" className="block text-offwhite mb-4">Week:</label>
+                        <input type="number" name="statsFormWeek" id="statsFormWeek" value={statsFormWeek} onChange={(e) => setStatsFormWeek(Number(e.target.value))} min={1} max={52} size={2} className="input" required />
+                        <p></p>
+                    </div>
+                    <div>
+                        <label htmlFor="statsFormYear" className="block text-offwhite mb-4">Year:</label>
+                        <input type="number" name="statsFormYear" id="statsFormYear" value={statsFormYear} onChange={(e) => setStatsFormYear(Number(e.target.value))} min={2020} max={2030} className="input" required />
+                    </div>
                 </div>
-                <div>
-                    <label htmlFor="contribution">Total Contribution</label>
-                    <input type="number" id="contribution" value={contribution} onChange={(e) => setContribution(Number(e.target.value))} min={1} required />
+                <div className="grid grid-cols-2 my-8">
+                    <div>
+                        <label htmlFor="battle" className="block text-offwhite mb-4">Battle Power:</label>
+                        <input type="number" id="battle" value={battle} onChange={(e) => setBattle(Number(e.target.value))} min={1} max={99999999} className="input" required />
+                    </div>
+                    <div>
+                        <label htmlFor="contribution" className="text-offwhite mb-4">Contribution:</label>
+                        <input type="number" id="contribution" value={contribution} onChange={(e) => setContribution(Number(e.target.value))} min={1} max={99999} className="input mt-4" required />
+                    </div>
                 </div>
-
                 {updateStatsMutation.isLoading ? <p>Saving member's stats...</p> : null}
-                {updateStatsMutation.isError ? <p>{updateStatsMutation.error}</p> : null}
-                {updateStatsMutation.isSuccess ? <p>{updateStatsMutation.data}</p> : null}
-
-                <button type="button" onClick={saveStats}>Save</button>
-                <button type="button" onClick={() => {saveStats(); closeDialog();}}>Save and Close</button>
-                <button type="button" onClick={closeDialog}>Close</button>
+                {updateStatsMutation.isError ? <p className="text-red">{updateStatsMutation.error}</p> : null}
+                {updateStatsMutation.isSuccess ? <p className="text-offwhite">{updateStatsMutation.data}</p> : null}
+                <div className="flex justify-end mt-24">
+                    <button type="button" onClick={closeDialog} className="secondary-btn mr-16">Close</button>
+                    <button type="button" onClick={saveStats} className="primary-btn">Save</button>
+                    {/* <button type="button" onClick={() => {saveStats(); closeDialog();}} className="secondary-btn">Save and Close</button> */}
+                </div>
             </form>
         </dialog>
     );

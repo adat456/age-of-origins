@@ -65,20 +65,22 @@ const MemberForm: React.FC<memberFormInterface> = function({ setMemberFormVis })
     };
 
     return (
-        <dialog className="member-form-dialog">
+        <dialog className="member-form-dialog bg-darkest p-24">
             <form className="member-form" onSubmit={handleAddMember} method="POST" noValidate>
-                <h1>Add new member</h1>
-                <div>
-                    <label htmlFor="username">Username</label>
+                <h1 className="text-offwhite text-center text-xl font-bold tracking-wide mb-16">Add new member</h1>
+                <div className="my-8">
+                    <label htmlFor="username" className="text-offwhite block mb-4">Username</label>
                     {usernameErrMsg ? <p>{usernameErrMsg}</p> : null}
                     <input type="text" id="username" value={username} onChange={handleUsernameChange} required />
                 </div>
-                <div>
-                    <label htmlFor="firstName">First name</label>
+                <div className="my-8">
+                    <label htmlFor="firstName" className="text-offwhite block mb-4">First name</label>
                     <input type="text" id="firstName" value={firstname} onChange={(e) => setFirstname(e.target.value)} />
                 </div>
-                <button type="submit">Submit</button>
-                <button type="button" onClick={closeDialog}>Close</button>
+                <div className="flex justify-end mt-24">
+                    <button type="button" onClick={closeDialog} className="secondary-btn mr-16">Close</button>
+                    <button type="submit" className="primary-btn">Submit</button>
+                </div>
                 {addMemberMutation.isLoading ? <p>Adding member...</p> : null}
                 {addMemberMutation.isError ? <p>{addMemberMutation.error}</p> : null}
                 {addMemberMutation.isSuccess ? <p>{addMemberMutation.data}</p> : null}

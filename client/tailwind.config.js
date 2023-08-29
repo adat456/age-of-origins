@@ -21,6 +21,7 @@ export default {
       'red': '#BE2828',
     },
     spacing: {
+      '4': '4px',
       '8': '8px',
       '16': '16px',
       '24': '24px',
@@ -31,12 +32,9 @@ export default {
     },
     fontFamily: {
       sans: ['Inter', 'sans-serif'],
-      // serif: ['Merriweather', 'serif'],
+      'alfa': ['Alfa Slab One', 'sans-serif']
     },
     extend: {
-      boxShadow: {
-        'navshadow': '0 4px 6px hsla(0, 0, 0, 0.4)'
-      }
     },
   },
   plugins: [],

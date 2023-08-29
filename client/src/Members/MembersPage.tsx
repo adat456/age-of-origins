@@ -1,23 +1,11 @@
-import { useState, useEffect } from "react";
-import MembersList from "./MembersList";
-import MemberForm from "./MemberForm";
+import { Outlet } from "react-router-dom"
 
 const MembersPage: React.FC = function() {
-    const [ memberFormVis, setMemberFormVis ] = useState(false);
-
-    useEffect(() => {
-        if (memberFormVis) {
-            const memberFormDialog = document.querySelector(".member-form-dialog") as HTMLDialogElement;
-            memberFormDialog?.showModal();
-        };
-    }, [memberFormVis]);
 
     return (
-        <> 
-            <MembersList />
-            <button type="button" onClick={() => setMemberFormVis(true)}>Add member</button>
-            {memberFormVis ? <MemberForm setMemberFormVis={setMemberFormVis} /> : null}
-        </>
+        <main className="px-24"> 
+            <Outlet />
+        </main>
     );
 };
 

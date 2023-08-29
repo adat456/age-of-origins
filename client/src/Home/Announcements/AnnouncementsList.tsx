@@ -41,7 +41,7 @@ const AnnouncementsList: React.FC = function() {
                     <button type="button" onClick={() => editAnnouncementMutation.mutate({ announcementid: announcement._id, pinned: !announcement.pinned})}>
                         {announcement.pinned ? "Unpin" : "Pin"}
                     </button>
-                    <button type="button" onClick={() => prepAnnouncementForm(announcement._id)} className="bg-red p-8 rounded ml-auto hover:bg-mutedred active:bg-mutedred focus:bg-mutedred text-offwhite">Edit</button>
+                    <button type="button" onClick={() => prepAnnouncementForm(announcement._id)} className="secondary-btn ml-auto">Edit</button>
                 </div>
                 <p className="text-offwhite text-sm">{`Posted ${new Date(announcement.postdate).toISOString().slice(0, 10)} by ${findAuthorUsername(announcement.author)}`}</p>
                 <p className="text-offwhite text-base">{announcement.body}</p>
@@ -66,9 +66,9 @@ const AnnouncementsList: React.FC = function() {
         <>
             <section className="mb-48">
                 <header className="flex my-16 justify-between">
-                    <h2 className="text-offwhite text-2xl font-bold">Announcements</h2>
-                    <button type="button" onClick={() => setAnnouncementFormVis(true)} className="bg-red p-4 hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
-                        <svg width="2rem" height="2rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <h2 className="text-offwhite text-2xl font-bold tracking-wide">Announcements</h2>
+                    <button type="button" onClick={() => setAnnouncementFormVis(true)} className="bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </button>
                 </header>
                 {announcements.isLoading ? <p>Fetching announcements...</p> : null}
