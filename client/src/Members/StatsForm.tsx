@@ -119,7 +119,6 @@ const StatsForm: React.FC<statsFormInterface> = function({ year, week, currentMe
                 <div className="flex justify-end mt-24">
                     <button type="button" onClick={closeDialog} className="secondary-btn mr-16">Close</button>
                     <button type="button" onClick={saveStats} className="primary-btn">Save</button>
-                    {/* <button type="button" onClick={() => {saveStats(); closeDialog();}} className="secondary-btn">Save and Close</button> */}
                 </div>
             </form>
         </dialog>

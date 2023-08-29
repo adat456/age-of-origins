@@ -4,10 +4,11 @@ import { fetchAnnouncements, addAnnouncement, editAnnouncement, deleteAnnounceme
 
 interface announcementFormInterface {
     announcementid?: string,
-    setAnnouncementFormVis: React.Dispatch<React.SetStateAction<boolean>>
+    setAnnouncementFormVis: React.Dispatch<React.SetStateAction<boolean>>,
+    setCurrentAnnouncementId: React.Dispatch<React.SetStateAction<string>>
 };
 
-const AnnouncementForm: React.FC<announcementFormInterface> = function({ announcementid, setAnnouncementFormVis }) {
+const AnnouncementForm: React.FC<announcementFormInterface> = function({ announcementid, setAnnouncementFormVis, setCurrentAnnouncementId }) {
     const [ title, setTitle ] = useState("");
     const [ titleErr, setTitleErr ] = useState("");
     const [ body, setBody ] = useState("");
@@ -100,24 +101,26 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
         const announcementFormDialog = document.querySelector("announcement-form-dialog") as HTMLDialogElement;
         announcementFormDialog?.close();
         setAnnouncementFormVis(false);
+        setCurrentAnnouncementId("");
     };
 
     return (
-        <dialog className="announcement-form-dialog">
+        <dialog className="announcement-form-dialog bg-darkest p-24">
             <form method="POST" onSubmit={handleSubmit} noValidate>
-                <div>
-                    <label htmlFor="title">Title</label>
+                <h1 className="text-offwhite text-center text-xl font-bold tracking-wide mb-16">{announcementid ? "Edit announcement" : "Add announcement"}</h1>
+                <div className="my-8">
+                    <label htmlFor="title" className="text-offwhite block mb-4">Title</label>
                     {titleErr ? <p>{titleErr}</p> : null}
-                    <input type="text" id="title" value={title} onChange={handleTextInput}/>
+                    <input type="text" id="title" value={title} onChange={handleTextInput} className="input" required />
                 </div>
-                <div>
-                    <label htmlFor="body">Body</label>
+                <div className="my-8">
+                    <label htmlFor="body" className="text-offwhite block mb-4">Body</label>
                     {bodyErr ? <p>{bodyErr}</p> : null}
-                    <textarea name="body" id="body" cols={30} rows={10} value={body} onChange={handleTextInput}></textarea>
+                    <textarea name="body" id="body" cols={30} rows={10} value={body} onChange={handleTextInput} className="input" required />
                 </div>
                 <div>
                     <input type="checkbox" name="pinned" id="pinned" checked={pinned} onChange={handlePinnedCheckbox} />
-                    <label htmlFor="pinned">Pin announcement to top</label>
+                    <label htmlFor="pinned" className="text-offwhite ml-8">Pin announcement to top</label>
                 </div>
                 {announcementid ?
                     addAnnouncementMutation.isError ?
@@ -128,14 +131,16 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
                         <p>{editAnnouncementMutation.error}</p>
                         : null
                 }
-                <button type="submit">{announcementid ? "Confirm edits" : "Post"}</button>
-                {announcementid ?
-                    <button type="button" onClick={handleDelete}>Delete post</button> : null
-                }
                 {deleteAnnouncementMutation.isError ?
                     <p>{deleteAnnouncementMutation.error}</p> : null
                 }
-                <button type="button" onClick={handleClose}>Close</button>
+                <div className="flex justify-end mt-24">
+                    <button type="button" onClick={handleClose} className="secondary-btn mr-16">Close</button>
+                    {announcementid ?
+                        <button type="button" onClick={handleDelete} className="secondary-btn mr-16">Delete post</button> : null
+                    }
+                    <button type="submit" className="primary-btn">{announcementid ? "Confirm edits" : "Post"}</button>
+                </div>
             </form>
         </dialog>
     );

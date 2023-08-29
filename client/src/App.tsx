@@ -16,6 +16,7 @@ import AllEvents from "./Events/AllEvents";
 import ExpandedEvent from "./Events/ExpandedEvent";
 import Scoreboard from "./Home/Scoreboard";
 import MembersList from "./Members/MembersList";
+import ScrollToTop from "./Shared/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Wrapper child={<NavBar />} />}>
             <Route index element={<HomeWrapper />} />
