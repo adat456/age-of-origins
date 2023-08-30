@@ -112,22 +112,6 @@ const EventForm: React.FC = function() {
         };  
     }, [body]);
 
-    function generateDateToggle() {
-        if (!daterange) {
-            return (
-                <button type="button" onClick={() => setDaterange(!daterange)} className="flex items-center bg-red h-24 w-48 rounded-3xl">
-                    <div className="bg-offwhite h-[18px] w-[18px] rounded-full ml-[3px] mb-[2px]"/>
-                </button>
-            );
-        } else {
-            return (
-                <button type="button" onClick={() => setDaterange(!daterange)} className="flex items-center justify-end bg-red h-24 w-48 rounded-3xl">
-                    <div className="bg-offwhite h-[18px] w-[18px] rounded-full mr-[4px] mb-[2px]"/>
-                </button>
-            );
-        };
-    };
-
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
 
@@ -159,13 +143,7 @@ const EventForm: React.FC = function() {
                     {bodyErr ? <p>{bodyErr}</p> : null}
                     <ReactQuill id="body" value={body} onChange={setBody} placeholder="Start typing here..." />
                 </div>
-                <div className="flex gap-8 mt-32 mb-16">
-                    <p className="text-offwhite">Set:</p>
-                    <p className="text-offwhite">individual dates</p>
-                    {generateDateToggle()}
-                    <p className="text-offwhite">date range</p>
-                </div>
-                <EventDatesFieldset daterange={daterange} individualDateId={individualDateId} setIndividualDateId={setIndividualDateId} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
+                <EventDatesFieldset daterange={daterange} setDaterange={setDaterange} individualDateId={individualDateId} setIndividualDateId={setIndividualDateId} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
                 <div className="flex justify-end mt-32 gap-16">
                     <button type="reset" onClick={clearAllFields} className="secondary-btn mr-16">Clear</button>
                     {eventid ? <button type="button" onClick={() => deleteEventMutation.mutate()} className="secondary-btn mr-16">Delete</button> : null}

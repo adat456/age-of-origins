@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getYear, getWeek, startOfWeek, lastDayOfWeek, addWeeks, subWeeks } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +14,14 @@ const Scoreboard: React.FC<scoreboardInterface> = function({ stat }) {
     const [ week, setWeek ] = useState(getWeek(new Date(), { weekStartsOn: 6 }));
 
     const location = useLocation();
+
+    useEffect(() => {
+        if (location.pathname !== "/" && location.state && location.state.week && location.state.year) {
+            setYear(location.state.year);
+            setWeek(location.state.week);
+            setScoreboardDate(location.state.scoreboardDate);
+        };
+    }, [location]);
 
     const allMembersStats = useQuery({
         queryKey: stat === "battle" ? [ "all-members-battle", year, week ] : [ "all-members-contribution", year, week ],
@@ -82,7 +90,7 @@ const Scoreboard: React.FC<scoreboardInterface> = function({ stat }) {
             }
             {location.pathname === "/" && allMembersStats.data?.length > 0 ?
                 stat === "battle" ?
-                    <Link to="/battle-rankings" className="link my-8 block text-right">See entire battle scoreboard</Link> :
+                    <Link to="/battle-rankings" state={{ year, week, scoreboardDate }} className="link my-8 block text-right">See entire battle scoreboard</Link> :
                     <Link to="/contribution-rankings" className="link my-8 block text-right">See entire contribution scoreboard</Link> 
                 : null
             }

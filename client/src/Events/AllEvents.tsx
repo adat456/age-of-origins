@@ -70,13 +70,17 @@ const AllEvents: React.FC = function() {
 
         let events;
         if (arrayForGeneratingEvents.length > 0) {
-            events = arrayForGeneratingEvents?.map(event => (
-                <div key={event._id} className="mb-24">
-                    <Link to={`/events/${event._id}`} className="link block mb-8">{event.title}</Link>
-                    {generateDates(event.range, event.eventdates)}
-                    <div className="text-offwhite" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.body.slice(0, 200) + "...", { USE_PROFILES: { html: true }}) }} />
-                </div>
-            ));
+            events = arrayForGeneratingEvents?.map(event => {
+                const ellipses = event.body.length > 200 ? "..." : "";
+                
+                return (
+                    <div key={event._id} className="mb-24">
+                        <Link to={`/events/${event._id}`} className="link block mb-8">{event.title}</Link>
+                        {generateDates(event.range, event.eventdates)}
+                        <div className="text-offwhite" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.body.slice(0, 200) + ellipses, { USE_PROFILES: { html: true }}) }} />
+                    </div>
+                );
+            });
         } else {
             events = <p className="text-offwhite text-center my-16">No matching events found.</p>;
         };
@@ -85,21 +89,19 @@ const AllEvents: React.FC = function() {
 
     function generateClassesForEventsTab(value: string) {
         if (value === eventsVis) {
-            return "py-8 px-16 bg-dark rounded-t text-offwhite";
+            return "py-8 px-16 bg-dark rounded-t text-offwhite font-bold";
         } else {
-            return "py-8 px-16 rounded-t hover:bg-dark focus:bg-dark text-offwhite"
+            return "py-8 px-16 rounded-t hover:bg-dark focus:bg-dark text-offwhite font-bold"
         };
     };
 
     return (
         <>  
-            <header className="mt-16">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-offwhite my-16 text-2xl font-bold tracking-wide">Events</h2>
-                    <Link to="/events/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
-                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </Link>
-                </div>
+            <header className="mt-16 flex items-center justify-between">
+                <h2 className="text-offwhite my-16 text-2xl font-bold tracking-wide">Events</h2>
+                <Link to="/events/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
+                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </Link>
             </header>
             <div className="flex gap-8">
                 <button type="button" onClick={() => setEventsVis("upcoming")} className={generateClassesForEventsTab("upcoming")}>Upcoming</button>
@@ -108,9 +110,9 @@ const AllEvents: React.FC = function() {
             </div>
             <div className="bg-dark rounded-b rounded-tr p-16">
                 {eventsVis === "upcoming" ?
-                    <div className="mb-24">
+                    <div className="mb-24 flex items-center">
                         <label htmlFor="timeFilter" className="text-offwhite mr-8">Filter by:</label>
-                        <select name="timeFilter" id="timeFilter" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="input">
+                        <select name="timeFilter" id="timeFilter" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="input flex-grow">
                             <option value=""></option>
                             <option value="today">Today</option>
                             <option value="nextWeek">Next 7 days</option>

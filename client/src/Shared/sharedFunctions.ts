@@ -1,4 +1,4 @@
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, events, archived-events, unarchived-events
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -189,7 +189,6 @@ export async function editReference(data: {referenceid: string, title: string, b
 };
 
 export async function deleteReference(referenceid: string) {
-    console.log(referenceid);
     const req = await fetch(`http://localhost:3001/delete-reference/${referenceid}`, { method: "DELETE" });
     if (req.ok) {
         return req.json();
