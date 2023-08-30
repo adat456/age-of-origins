@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { convert } from "html-to-text";
+import DOMPurify from "dompurify";
 import { fetchAllEvents, fetchMembers, toggleEventArchival, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import { eventInterface, memberInterface } from "../Shared/interfaces";
 
 const ExpandedEvent: React.FC = function() {
     const [ event, setEvent ] = useState<eventInterface | undefined>(undefined);
+    const [ buttonsVis, setButtonsVis ] = useState(false);
     const [ matchingMembers, setMatchingMembers ] = useState<memberInterface[]>([]);
 
-    const { eventid } = useParams();
+    const participantSearchRef = useRef<HTMLInputElement>(null);
 
+    const { eventid } = useParams();
     const navigate = useNavigate();
 
     const queryClient = useQueryClient();
@@ -54,38 +56,60 @@ const ExpandedEvent: React.FC = function() {
         dates?.sort();
         if (range) {
             return (
-                <p>{`Dates: ${dates[0]} through ${dates[dates.length - 1]}`}</p>
+                <p className="text-offwhite">{`Dates: ${dates[0]} through ${dates[dates.length - 1]}`}</p>
             );
         } else {
             const commaDelimitedDatesString = dates?.join(", ");
             return (
-                <p>{`Dates: ${commaDelimitedDatesString}`}</p>
+                <p className="text-offwhite">{`Dates: ${commaDelimitedDatesString}`}</p>
             );
         };  
     };
 
     function generateParticipants() {
-        const participants = event?.participation.map(participantid => {
-            const matchingParticipant = members.data?.find(member => member._id === participantid);
-            return (
-                <button key={participantid} onClick={() => removeParticipant(participantid)}>{matchingParticipant?.username}</button>
-            );
-        });
+        const filledOutParticipants = event?.participation.map(participantid => members.data?.find(member => member._id === participantid));
+        const participants = filledOutParticipants?.
+            sort((a, b) => {
+                if (a.username.toLowerCase() < b.username.toLowerCase()) {
+                    return -1;
+                } else if (a.username.toLowerCase() > b.username.toLowerCase()) {
+                    return 1;
+                };
+                return 0;
+            }).
+            map(participant => (
+                <button key={participant._id} onClick={() => removeParticipant(participant._id)} className="primary-btn flex items-center gap-8">
+                    <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12L18 12" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <p>{participant?.username}</p>
+                </button>
+            ));
         return participants;
     };
 
     function handleMemberChange(e: React.ChangeEvent<HTMLInputElement>) {
         const cleanedSearch = e.target.value.trim().toLowerCase();
         if (members.data && cleanedSearch) {
-            setMatchingMembers(members.data.filter(member => member.username.includes(cleanedSearch) && !event?.participation.includes(member._id)));
+            setMatchingMembers(members.data.filter(member => member.username.toLowerCase().includes(cleanedSearch) && !event?.participation.includes(member._id)));
         } else {
             setMatchingMembers([]);
         };
     };
 
     function generateMatchingMembers() {
-        const members = matchingMembers?.map(member => (
-            <button key={member._id} onClick={() => addParticipant(member._id)}>{member.username}</button>
+        const members = matchingMembers?.
+            sort((a, b) => {
+                if (a.username.toLowerCase() < b.username.toLowerCase()) {
+                    return -1;
+                } else if (a.username.toLowerCase() > b.username.toLowerCase()) {
+                    return 1;
+                };
+                return 0;
+            }).
+            map(member => (
+            <button key={member._id} onClick={() => addParticipant(member._id)} className="primary-btn flex items-center gap-8">
+                <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M12 4V20" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <p>{member.username}</p>
+            </button>
         ));
         return members;
     };
@@ -93,31 +117,52 @@ const ExpandedEvent: React.FC = function() {
     function addParticipant(memberid: string) {
         if (event) {
             editEventMutation.mutate({ eventid: event._id, participation: [...event.participation, memberid]});
+            // if participant add was successful, remove from search results
+            if (!editEventMutation.isError) setMatchingMembers(matchingMembers.filter(member => member._id !== memberid))
         };
     };
     function removeParticipant(memberid: string) {
         if (event) {
             editEventMutation.mutate({ eventid: event._id, participation: event.participation.filter(participantid => participantid !== memberid)});
+            // only add back to search results if participant removal was successful AND there is still a member search going on
+            if (participantSearchRef.current?.value.trim() !== "") setMatchingMembers([...matchingMembers, members.data?.find(member => member._id === memberid)])
         };
     };
     
     return (
-        <>
-            <h2>{event?.title}</h2>
-            <div>
-                <Link to={`/events/${event?._id}/edit`}>Edit event</Link>
-                <button type="button" onClick={() => deleteEventMutation.mutate()}>Delete</button>
-            </div>
-            <button type="button" onClick={() => toggleArchival.mutate(event?._id)}>{event?.archived ? "Unarchive" : "Archive"}</button>
-            <p>{convert(event?.body)}</p>
+        <main>
+            <Link to="/events" className="link">Back to events</Link>
+            <header className="flex justify-center items-center my-16 gap-16">
+                <h2 className="text-offwhite my-16 text-2xl font-bold text-center tracking-wide">{event?.title}</h2>
+                <button type="button" onClick={() => setButtonsVis(!buttonsVis)}>
+                {/* className="hover:bg-red focus:bg-red rounded p-8" */}
+                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20H20.5M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </button>
+            </header>
+            {buttonsVis ?
+                <div className="flex justify-center gap-16 my-16">
+                    <Link to={`/events/${event?._id}/edit`} className="primary-btn">Edit event</Link>
+                    <button type="button" onClick={() => toggleArchival.mutate(event?._id)} className="secondary-btn">{event?.archived ? "Unarchive" : "Archive"}</button>
+                    <button type="button" onClick={() => deleteEventMutation.mutate()}className="secondary-btn">Delete</button>
+                </div> : null
+            }
             {generateDates(event?.range, event?.eventdates)}
-            <div>
-                {generateParticipants()}
-                <label htmlFor="members">Add members as participants</label>
-                <input type="text" name="members" id="members" onChange={handleMemberChange} />
-                {generateMatchingMembers()}
-            </div>
-        </>
+            <div className="text-offwhite mt-16" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event?.body, { USE_PROFILES: { html: true }}) }} />
+            <section className="my-24">
+                <h3 className="text-offwhite my-16 text-xl font-bold text-center tracking-wide">Participants</h3>
+                <div className="flex flex-wrap gap-8 my-16">
+                    {generateParticipants()}
+                </div>
+                <div className="flex justify-between gap-8">
+                    <label htmlFor="members" className="text-offwhite">Search</label>
+                    <input ref={participantSearchRef} type="text" name="members" id="members" onChange={handleMemberChange} className="input flex-grow" />
+                </div>
+                
+                <div className="flex flex-wrap gap-8 my-16">
+                    {generateMatchingMembers()}
+                </div>
+            </section>
+        </main>
     );
 };
 

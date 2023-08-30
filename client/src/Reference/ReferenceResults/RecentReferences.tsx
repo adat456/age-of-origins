@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { convert } from "html-to-text";
 import { fetchRecentReferences } from "../../Shared/sharedFunctions";
 import TagNav from "../ReferenceNav/TagNav";
 

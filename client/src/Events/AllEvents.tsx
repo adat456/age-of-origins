@@ -1,36 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchAllEvents, fetchUnarchivedEvents, fetchArchivedEvents, toggleEventArchival } from "../Shared/sharedFunctions";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAllEvents } from "../Shared/sharedFunctions";
+import DOMPurify from "dompurify";
 import { eventInterface } from "../Shared/interfaces";
-import { convert } from "html-to-text";
 import { add, formatISO, parseISO } from "date-fns";
 
 const AllEvents: React.FC = function() {
-    const [ archivedEventsVis, setArchivedEventsVis ] = useState(false);
+    const [ eventsVis, setEventsVis ] = useState<"upcoming" | "previous" | "archived">("upcoming");
     const [ timeFilter, setTimeFilter ] = useState("");
 
-    const queryClient = useQueryClient();
-    const archivedEvents = useQuery({
-        queryKey: [ "archived-events" ],
-        queryFn: fetchArchivedEvents,
-        enabled: archivedEventsVis
-    });
-    const unarchivedEvents = useQuery({
-        queryKey: [ "unarchived-events" ],
-        queryFn: fetchUnarchivedEvents
-    });
     const allEvents = useQuery({
         queryKey: [ "events" ],
         queryFn: fetchAllEvents,
-        enabled: !!(unarchivedEvents || archivedEvents),
-    });
-    const toggleEventArchivalMutation = useMutation({
-        mutationFn: (eventid: string) => toggleEventArchival(eventid),
-        onSuccess: () => {
-            queryClient.invalidateQueries("archived-events")
-            queryClient.invalidateQueries("unarchived-events");
-        },
     });
 
     const todayISO = formatISO(new Date()).slice(0, 10);
@@ -42,72 +24,103 @@ const AllEvents: React.FC = function() {
         dates?.sort();
         if (range) {
             return (
-                <p>{`Dates: ${dates[0]} through ${dates[dates.length - 1]}`}</p>
+                <p className="text-offwhite my-8">{`Dates: ${dates[0]} through ${dates[dates.length - 1]}`}</p>
             );
         } else {
             const commaDelimitedDatesString = dates?.join(", ");
             return (
-                <p>{`Dates: ${commaDelimitedDatesString}`}</p>
+                <p className="text-offwhite my-8">{`Dates: ${commaDelimitedDatesString}`}</p>
             );
         };  
     };
 
-    function generateEvents(array: eventInterface[]) {
-        if (array.length === 0) return (<p>No events found.</p>);
-
-        let events = null;
+    function generateEventsList() {
         let arrayForGeneratingEvents: eventInterface[] = [];
-        if (timeFilter) {
-            switch (timeFilter) {
-                case "today": 
-                    arrayForGeneratingEvents = array.filter(event => event.eventdates.includes(todayISO));
-                    break;
-                case "nextWeek": 
-                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= weekFromTodayISO));
-                    break;
-                case "nextTwoWeeks": 
-                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= twoWeeksFromTodayISO));
-                    break;
-                case "nextMonth": 
-                    arrayForGeneratingEvents = array.filter(event => event.eventdates.some(date => date >= todayISO && date <= monthFromTodayISO));
-                    break;
-            };
-        } else {
-            arrayForGeneratingEvents = [...array];
+
+        // first filter by upcoming, previous, or archived events
+        switch (allEvents.data && eventsVis) {
+            case "upcoming":
+                arrayForGeneratingEvents = allEvents.data.filter(event => event.eventdates.some(date => date >= todayISO) && !event.archived);
+                break;
+            case "previous":
+                arrayForGeneratingEvents = allEvents.data.filter(event => !event.eventdates.some(date => date >= todayISO) && !event.archived);
+                break;
+            case "archived":
+                arrayForGeneratingEvents = allEvents.data.filter(event => event.archived);
+                break;
         };
 
-        events = arrayForGeneratingEvents.map(event => (
-            <div key={event._id}>
-                <Link to={`/events/${event._id}`}><h2>{event.title}</h2></Link>
-                <button type="button" onClick={() => toggleEventArchivalMutation.mutate(event._id)}>{event.archived ? "Unarchive" : "Archive"}</button>
-                <p>{convert(event.body)}</p>
-                {generateDates(event.range, event.eventdates)}
-            </div>
-        ));
+        // then apply any time filters if they are upcoming events
+        if (allEvents.data && timeFilter && eventsVis === "upcoming") {
+            switch (timeFilter) {
+                case "today": 
+                    arrayForGeneratingEvents = arrayForGeneratingEvents.filter(event => event.eventdates.includes(todayISO));
+                    break;
+                case "nextWeek": 
+                    arrayForGeneratingEvents = arrayForGeneratingEvents.filter(event => event.eventdates.some(date => date >= todayISO && date <= weekFromTodayISO));
+                    break;
+                case "nextTwoWeeks": 
+                    arrayForGeneratingEvents = arrayForGeneratingEvents.filter(event => event.eventdates.some(date => date >= todayISO && date <= twoWeeksFromTodayISO));
+                    break;
+                case "nextMonth": 
+                    arrayForGeneratingEvents = arrayForGeneratingEvents.filter(event => event.eventdates.some(date => date >= todayISO && date <= monthFromTodayISO));
+                    break;
+            };
+        };
+
+        let events;
+        if (arrayForGeneratingEvents.length > 0) {
+            events = arrayForGeneratingEvents?.map(event => (
+                <div key={event._id} className="mb-24">
+                    <Link to={`/events/${event._id}`} className="link block mb-8">{event.title}</Link>
+                    {generateDates(event.range, event.eventdates)}
+                    <div className="text-offwhite" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.body.slice(0, 200) + "...", { USE_PROFILES: { html: true }}) }} />
+                </div>
+            ));
+        } else {
+            events = <p className="text-offwhite text-center my-16">No matching events found.</p>;
+        };
         return events;
+    };
+
+    function generateClassesForEventsTab(value: string) {
+        if (value === eventsVis) {
+            return "py-8 px-16 bg-dark rounded-t text-offwhite";
+        } else {
+            return "py-8 px-16 rounded-t hover:bg-dark focus:bg-dark text-offwhite"
+        };
     };
 
     return (
         <>  
-            <button type="button" onClick={() => setArchivedEventsVis(false)}>Recent and Upcoming Events</button>
-            <button type="button" onClick={() => setArchivedEventsVis(true)}>Archived Events</button>
-            <div>
-                <label htmlFor="timeFilter">Filter by:</label>
-                <select name="timeFilter" id="timeFilter" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
-                    <option value=""></option>
-                    <option value="today">Today</option>
-                    <option value="nextWeek">Next 7 days</option>
-                    <option value="nextTwoWeeks">Next 14 days</option>
-                    <option value="nextMonth">Next month</option>
-                </select>
-                {!archivedEventsVis && unarchivedEvents.isSuccess ? 
-                    generateEvents(unarchivedEvents.data) : null
-                }
-                {archivedEventsVis && archivedEvents.isSuccess ? 
-                    generateEvents(archivedEvents.data) : null
-                }
+            <header className="mt-16">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-offwhite my-16 text-2xl font-bold tracking-wide">Events</h2>
+                    <Link to="/events/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </Link>
+                </div>
+            </header>
+            <div className="flex gap-8">
+                <button type="button" onClick={() => setEventsVis("upcoming")} className={generateClassesForEventsTab("upcoming")}>Upcoming</button>
+                <button type="button" onClick={() => setEventsVis("previous")} className={generateClassesForEventsTab("previous")}>Previous</button>
+                <button type="button" onClick={() => setEventsVis("archived")} className={generateClassesForEventsTab("archived")}>Archived</button>
             </div>
-            <Link to="/events/create">Add Event</Link>
+            <div className="bg-dark rounded-b rounded-tr p-16">
+                {eventsVis === "upcoming" ?
+                    <div className="mb-24">
+                        <label htmlFor="timeFilter" className="text-offwhite mr-8">Filter by:</label>
+                        <select name="timeFilter" id="timeFilter" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)} className="input">
+                            <option value=""></option>
+                            <option value="today">Today</option>
+                            <option value="nextWeek">Next 7 days</option>
+                            <option value="nextTwoWeeks">Next 14 days</option>
+                            <option value="nextMonth">Next month</option>
+                        </select>
+                    </div> : null
+                }
+                {generateEventsList()}
+            </div>
         </>
     );
 };

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { convert } from "html-to-text";
+import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllEvents, addEvent, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import EventDatesFieldset from "./EventDatesFieldset";
@@ -21,7 +21,7 @@ const EventForm: React.FC = function() {
     const [ startDate, setStartDate ] = useState(new Date().toISOString().slice(0, 10));
     const [ endDate, setEndDate ] = useState(new Date().toISOString().slice(0, 10));
 
-    const { eventid} = useParams();
+    const { eventid } = useParams();
 
     const navigate = useNavigate();
 
@@ -103,7 +103,7 @@ const EventForm: React.FC = function() {
         };
         // after the first change, any changes that result in whitespace only result an error
         if (numBodyChangesRef.current > 0) {
-            const bodyText = convert(body);
+            const bodyText = DOMPurify.sanitize(body, { USE_PROFILES: { html: true }});
             if (!bodyText.trim()) {
                 setBodyErr("Body required without whitespace.");
             } else {
@@ -111,6 +111,22 @@ const EventForm: React.FC = function() {
             };
         };  
     }, [body]);
+
+    function generateDateToggle() {
+        if (!daterange) {
+            return (
+                <button type="button" onClick={() => setDaterange(!daterange)} className="flex items-center bg-red h-24 w-48 rounded-3xl">
+                    <div className="bg-offwhite h-[18px] w-[18px] rounded-full ml-[3px] mb-[2px]"/>
+                </button>
+            );
+        } else {
+            return (
+                <button type="button" onClick={() => setDaterange(!daterange)} className="flex items-center justify-end bg-red h-24 w-48 rounded-3xl">
+                    <div className="bg-offwhite h-[18px] w-[18px] rounded-full mr-[4px] mb-[2px]"/>
+                </button>
+            );
+        };
+    };
 
     function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -129,25 +145,34 @@ const EventForm: React.FC = function() {
     };
 
     return (
-        <form method="POST" noValidate onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="title">Name</label>
-                {titleErr ? <p>{titleErr}</p> : null}
-                <input type="text" name="title" id="title" value={title} onChange={handleTitleChange} />
-            </div>
-            <div>
-                <label htmlFor="body">Description</label>
-                {bodyErr ? <p>{bodyErr}</p> : null}
-                <ReactQuill id="body" value={body} onChange={setBody} placeholder="Start typing here..." />
-            </div>
-            <button type="button" onClick={() => setDaterange(!daterange)}>{daterange ? "Setting dates by range" : "Setting dates individually"}</button>
-            <EventDatesFieldset daterange={daterange} individualDateId={individualDateId} setIndividualDateId={setIndividualDateId} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
-            <div>
-                <button type="reset" onClick={clearAllFields}>Clear</button>
-                <button type="submit">{!eventid ? "Create" : "Submit edits"}</button>
-                {eventid ? <button type="button" onClick={() => deleteEventMutation.mutate()}>Delete</button> : null}
-            </div>
-        </form>
+        <>
+            <Link to="/events" className="link">Back to events</Link>
+            <form method="POST" noValidate onSubmit={handleSubmit}>
+                <h2 className="text-offwhite text-center text-2xl font-bold tracking-wide mt-24">{eventid ? "Edit event" : "Add event"}</h2>
+                <div className="my-8">
+                    <label htmlFor="title" className="block text-offwhite mb-4">Name</label>
+                    {titleErr ? <p>{titleErr}</p> : null}
+                    <input type="text" name="title" id="title" value={title} onChange={handleTitleChange} className="input w-full" required />
+                </div>
+                <div className="my-8">
+                    <label htmlFor="body" className="block text-offwhite mb-4">Description</label>
+                    {bodyErr ? <p>{bodyErr}</p> : null}
+                    <ReactQuill id="body" value={body} onChange={setBody} placeholder="Start typing here..." />
+                </div>
+                <div className="flex gap-8 mt-32 mb-16">
+                    <p className="text-offwhite">Set:</p>
+                    <p className="text-offwhite">individual dates</p>
+                    {generateDateToggle()}
+                    <p className="text-offwhite">date range</p>
+                </div>
+                <EventDatesFieldset daterange={daterange} individualDateId={individualDateId} setIndividualDateId={setIndividualDateId} individualDates={individualDates} setIndividualDates={setIndividualDates} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} />
+                <div className="flex justify-end mt-32 gap-16">
+                    <button type="reset" onClick={clearAllFields} className="secondary-btn mr-16">Clear</button>
+                    {eventid ? <button type="button" onClick={() => deleteEventMutation.mutate()} className="secondary-btn mr-16">Delete</button> : null}
+                    <button type="submit" className="primary-btn">{!eventid ? "Create" : "Submit edits"}</button>
+                </div>
+            </form>
+        </>
     );
 };
 

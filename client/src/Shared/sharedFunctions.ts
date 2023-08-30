@@ -200,25 +200,7 @@ export async function deleteReference(referenceid: string) {
 
 /// EVENTS ///
 export async function fetchAllEvents() {
-    const req = await fetch("http://localhost:3001/fetch-events/all");
-    if (req.ok) {
-        return req.json();
-    } else {
-        throw new Error(await req.json())
-    };
-};
-
-export async function fetchUnarchivedEvents() {
-    const req = await fetch("http://localhost:3001/fetch-events/false");
-    if (req.ok) {
-        return req.json();
-    } else {
-        throw new Error(await req.json())
-    };
-};
-
-export async function fetchArchivedEvents() {
-    const req = await fetch("http://localhost:3001/fetch-events/true");
+    const req = await fetch("http://localhost:3001/fetch-events");
     if (req.ok) {
         return req.json();
     } else {

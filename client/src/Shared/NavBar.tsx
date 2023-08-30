@@ -13,7 +13,7 @@ const NavBar: React.FC = function() {
                 </button>
             </header>
             {navOpen ? 
-                <div className="fixed inset-0 z-10 h-full w-full bg-darkest/95">
+                <div className="fixed inset-0 z-20 h-full w-full bg-darkest/95">
                     <nav className="flex flex-col items-center gap-48">
                         <button onClick={() => setNavOpen(false)}>Close</button>
                         <Link to="/" onClick={() => setNavOpen(false)} className="text-offwhite text-4xl pb-8 border-b-2 border-offwhite">Home</Link>

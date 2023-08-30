@@ -134,10 +134,10 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
                 {deleteAnnouncementMutation.isError ?
                     <p>{deleteAnnouncementMutation.error}</p> : null
                 }
-                <div className="flex justify-end mt-24">
-                    <button type="button" onClick={handleClose} className="secondary-btn mr-16">Close</button>
+                <div className="flex justify-end mt-24 gap-16">
+                    <button type="button" onClick={handleClose} className="secondary-btn">Close</button>
                     {announcementid ?
-                        <button type="button" onClick={handleDelete} className="secondary-btn mr-16">Delete post</button> : null
+                        <button type="button" onClick={handleDelete} className="secondary-btn">Delete post</button> : null
                     }
                     <button type="submit" className="primary-btn">{announcementid ? "Confirm edits" : "Post"}</button>
                 </div>

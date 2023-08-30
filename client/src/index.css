@@ -4,6 +4,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    legend {
+        @apply hidden
+        /* float-left w-full */
+    }
+}
+
 @layer components {
     .primary-btn {
         @apply bg-red hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded p-8 text-offwhite

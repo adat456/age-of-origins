@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { convert } from "html-to-text";
 import { fetchAllReferences } from "../../Shared/sharedFunctions";
 import { referenceInterface } from "../../Shared/interfaces";
 

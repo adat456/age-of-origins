@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAllReferences } from "../../Shared/sharedFunctions";
 import { referenceInterface } from "../../Shared/interfaces";
-import { convert } from "html-to-text";
 import TagNav from "../ReferenceNav/TagNav";
 import SearchReferences from "../ReferenceNav/SearchReferences";
 

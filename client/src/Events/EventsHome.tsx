@@ -2,10 +2,9 @@ import { Outlet } from "react-router-dom"
 
 const EventsHome: React.FC = function() {
     return (
-        <>
-            <h1>Events</h1>
+        <main className="px-24">
             <Outlet />
-        </>
+        </main>
     );
 };
 

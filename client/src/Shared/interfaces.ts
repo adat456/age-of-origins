@@ -14,14 +14,6 @@ export interface statInterface {
     member: string | memberInterface,
 };
 
-export interface eventInterface {
-    _id: string,
-    name: string,
-    dates: string[],
-    expectations: string,
-    participants: string[]
-};
-
 export interface announcementInterface {
     _id: string,
     title: string,
