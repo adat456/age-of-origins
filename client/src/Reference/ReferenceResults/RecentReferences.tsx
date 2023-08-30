@@ -1,10 +1,14 @@
+import { useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { fetchRecentReferences } from "../../Shared/sharedFunctions";
+import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 import TagNav from "../ReferenceNav/TagNav";
 
 const RecentReferences: React.FC = function() {
+    const authenticated = useContext(AuthenticatedContext);
+
     const recentReferences = useQuery({
         queryKey: [ "recent-references" ],
         queryFn: fetchRecentReferences
@@ -34,9 +38,11 @@ const RecentReferences: React.FC = function() {
         <>
             <header className="mt-16 flex items-center justify-between">
                 <h2 className="text-offwhite text-2xl font-bold tracking-wide my-16">Reference</h2>
-                <Link to="/reference/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
-                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </Link>
+                {authenticated ?
+                    <Link to="/reference/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </Link> : null
+                }
             </header>
             <TagNav />
             <h3 className="text-offwhite text-xl font-bold tracking-wide mt-24 text-center">Recent Posts</h3>

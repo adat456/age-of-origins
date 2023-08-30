@@ -25,3 +25,27 @@
         @apply bg-offwhite rounded-sm pl-4 focus:border-light focus:border-2
     }
 }
+
+.quill {
+    border-radius: 0.5rem;
+}
+.ql-toolbar.ql-snow {
+    border: 1px solid #E0E3EB;
+    background-color: #E0E3EB;
+    border-top-left-radius: 0.2rem;
+    border-top-right-radius: 0.2rem;
+};
+.ql-container.ql-snow {
+    border: 1px solid #E0E3EB;
+    height: 10rem;
+    border-bottom-left-radius: 0.2rem;
+    border-bottom-right-radius: 0.2rem;
+}
+.ql-editor {
+    color: #E0E3EB;
+    font-size: 1rem;
+    letter-spacing: 0.05rem;
+}
+.ql-editor.ql-blank::before {
+    color: #E0E3EB;
+}

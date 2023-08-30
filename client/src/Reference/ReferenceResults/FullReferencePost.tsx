@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllReferences, deleteReference } from "../../Shared/sharedFunctions";
 import { referenceInterface } from "../../Shared/interfaces";
+import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 
 const FullReferencePost: React.FC = function() {
     const [ currentReference, setCurrentReference ] = useState<referenceInterface | undefined>(undefined);
     const [ buttonsVis, setButtonsVis ] = useState(false);
 
     const { referenceid } = useParams();
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const queryClient = useQueryClient();
     const allReferences = useQuery({
@@ -44,12 +47,13 @@ const FullReferencePost: React.FC = function() {
             <Link to="/reference" className="link">Back to all reference posts</Link>
             <header className="flex justify-center items-center my-8 gap-8">
                 <h2 className="text-offwhite mt-16 mb-8 text-2xl font-bold text-center tracking-wide">{currentReference?.title}</h2>
-                <button type="button" onClick={() => setButtonsVis(!buttonsVis)} className="mt-16 mb-8">
-                {/* className="hover:bg-red focus:bg-red rounded p-8" */}
-                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20H20.5M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
+                {authenticated ?
+                    <button type="button" onClick={() => setButtonsVis(!buttonsVis)} className="mt-16 mb-8">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20H20.5M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button> : null
+                }
             </header>
-            {buttonsVis ?
+            {buttonsVis && authenticated ?
                 <div className="flex justify-center gap-16 mt-8 mb-32">
                     <Link to={`/reference/post/${currentReference?._id}/edit`} className="secondary-btn">Edit</Link>
                     <button type="button" onClick={() => deleteReferenceMutation.mutate()} className="secondary-btn">Delete</button>

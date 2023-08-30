@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAllEvents } from "../Shared/sharedFunctions";
 import DOMPurify from "dompurify";
 import { eventInterface } from "../Shared/interfaces";
 import { add, formatISO, parseISO } from "date-fns";
+import AuthenticatedContext from "../Shared/AuthenticatedContext";
 
 const AllEvents: React.FC = function() {
     const [ eventsVis, setEventsVis ] = useState<"upcoming" | "previous" | "archived">("upcoming");
     const [ timeFilter, setTimeFilter ] = useState("");
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const allEvents = useQuery({
         queryKey: [ "events" ],
@@ -99,9 +102,11 @@ const AllEvents: React.FC = function() {
         <>  
             <header className="mt-16 flex items-center justify-between">
                 <h2 className="text-offwhite my-16 text-2xl font-bold tracking-wide">Events</h2>
-                <Link to="/events/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
-                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </Link>
+                {authenticated ?
+                    <Link to="/events/create" className="block bg-red p-[5px] hover:bg-mutedred active:bg-mutedred focus:bg-mutedred rounded">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12L12 12M12 12L17 12M12 12V7M12 12L12 17" stroke="#E0E3EB" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </Link> : null
+                }
             </header>
             <div className="flex gap-8">
                 <button type="button" onClick={() => setEventsVis("upcoming")} className={generateClassesForEventsTab("upcoming")}>Upcoming</button>

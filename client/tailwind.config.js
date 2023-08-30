@@ -5,11 +5,6 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    screens: {
-      'tablet': '640px',
-      'laptop': '1024px',
-      'desktop': '1536px',
-    },
     colors: {
       'darkest': '#20232D',
       'dark': '#2C3144',

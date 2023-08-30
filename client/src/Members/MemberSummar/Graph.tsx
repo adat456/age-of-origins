@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 import { Line, getElementsAtEvent } from "react-chartjs-2";
 import { useQuery } from "@tanstack/react-query"
 import { fetchPastYearStats } from "../../Shared/sharedFunctions";
 import { statInterface } from "../../Shared/interfaces";
+import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 import StatsForm from "../StatsForm";
 
 ChartJS.register(
@@ -30,6 +31,8 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
     const chartRef = useRef<ChartJS>(null);
 
     const { memberid } = useParams();
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const pastYearStats = useQuery({
         queryKey: [ `${memberid}-past-year-stats` ],
@@ -198,7 +201,7 @@ const Graph: React.FC<graphInterface> = function({ stat }) {
     };
 
     function handleChartClick(e: React.MouseEvent<HTMLCanvasElement>) {
-        if (chartRef.current) {
+        if (chartRef.current && authenticated) {
             const pointElement = getElementsAtEvent(chartRef.current, e);
             if (pointElement.length > 0) {
                 const truncatedStats = truncateResults();

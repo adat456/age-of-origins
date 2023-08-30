@@ -15,6 +15,7 @@ export async function createMember(memberData: { username: string, firstname: st
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(memberData),
+        credentials: "include"
     };
     const req = await fetch("http://localhost:3001/create-member", reqOptions);
     
@@ -76,6 +77,7 @@ export async function updateStats(data: { memberid: string, battle?: number, con
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch("http://localhost:3001/update-stats", reqOptions);
     if (req.ok) {
@@ -100,6 +102,7 @@ export async function addAnnouncement(data: {author: string, title: string, body
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/add-announcement`, reqOptions);
     if (req.ok) {
@@ -114,6 +117,7 @@ export async function editAnnouncement(data: {announcementid: string, title?: st
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/edit-announcement`, reqOptions);
     if (req.ok) {
@@ -124,7 +128,7 @@ export async function editAnnouncement(data: {announcementid: string, title?: st
 };
 
 export async function deleteAnnouncement(announcementid: string) {
-    const req = await fetch(`http://localhost:3001/delete-announcement/${announcementid}`, { method: "DELETE" });
+    const req = await fetch(`http://localhost:3001/delete-announcement/${announcementid}`, { method: "DELETE", credentials: "include" });
     if (req.ok) {
         return req.json();
     } else {
@@ -165,6 +169,7 @@ export async function addReference(data: {author: string, title: string, body: s
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/add-reference`, reqOptions);
     if (req.ok) {
@@ -179,6 +184,7 @@ export async function editReference(data: {referenceid: string, title: string, b
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/edit-reference`, reqOptions);
     if (req.ok) {
@@ -189,7 +195,7 @@ export async function editReference(data: {referenceid: string, title: string, b
 };
 
 export async function deleteReference(referenceid: string) {
-    const req = await fetch(`http://localhost:3001/delete-reference/${referenceid}`, { method: "DELETE" });
+    const req = await fetch(`http://localhost:3001/delete-reference/${referenceid}`, { method: "DELETE", credentials: "include" });
     if (req.ok) {
         return req.json();
     } else {
@@ -212,6 +218,7 @@ export async function addEvent(data: {author: string, title: string, body: strin
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/add-event`, reqOptions);
     if (req.ok) {
@@ -222,7 +229,7 @@ export async function addEvent(data: {author: string, title: string, body: strin
 };
 
 export async function toggleEventArchival(eventid: string) {
-    const req = await fetch(`http://localhost:3001/toggle-event-archival/${eventid}`, { method: "PATCH" });
+    const req = await fetch(`http://localhost:3001/toggle-event-archival/${eventid}`, { method: "PATCH", credentials: "include" });
     if (req.ok) {
         return req.json();
     } else {
@@ -235,6 +242,7 @@ export async function editEvent(data: {eventid: string, title?: string, body?: s
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include"
     };
     const req = await fetch(`http://localhost:3001/edit-event`, reqOptions);
     if (req.ok) {
@@ -245,7 +253,7 @@ export async function editEvent(data: {eventid: string, title?: string, body?: s
 };
 
 export async function deleteEvent(eventid: string) {
-    const req = await fetch(`http://localhost:3001/delete-event/${eventid}`, { method: "DELETE" });
+    const req = await fetch(`http://localhost:3001/delete-event/${eventid}`, { method: "DELETE", credentials: "include" });
     if (req.ok) {
         return req.json();
     } else {

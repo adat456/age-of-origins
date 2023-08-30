@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DOMPurify from "dompurify";
 import { fetchAllEvents, fetchMembers, toggleEventArchival, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import { eventInterface, memberInterface } from "../Shared/interfaces";
+import AuthenticatedContext from "../Shared/AuthenticatedContext";
 
 const ExpandedEvent: React.FC = function() {
     const [ event, setEvent ] = useState<eventInterface | undefined>(undefined);
@@ -11,6 +12,8 @@ const ExpandedEvent: React.FC = function() {
     const [ matchingMembers, setMatchingMembers ] = useState<memberInterface[]>([]);
 
     const participantSearchRef = useRef<HTMLInputElement>(null);
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const { eventid } = useParams();
     const navigate = useNavigate();
@@ -106,10 +109,10 @@ const ExpandedEvent: React.FC = function() {
                 return 0;
             }).
             map(member => (
-            <button key={member._id} onClick={() => addParticipant(member._id)} className="primary-btn flex items-center gap-8">
-                <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M12 4V20" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <p>{member.username}</p>
-            </button>
+                <button key={member._id} onClick={() => addParticipant(member._id)} className="primary-btn flex items-center gap-8">
+                    <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M12 4V20" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <p>{member.username}</p>
+                </button>
         ));
         return members;
     };
@@ -134,11 +137,13 @@ const ExpandedEvent: React.FC = function() {
             <Link to="/events" className="link">Back to events</Link>
             <header className="flex justify-center items-center my-8 gap-8">
                 <h2 className="text-offwhite mt-16 mb-8 text-2xl font-bold text-center tracking-wide">{event?.title}</h2>
-                <button type="button" onClick={() => setButtonsVis(!buttonsVis)} className="mt-16 mb-8">
-                    <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20H20.5M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
+                {authenticated ?
+                    <button type="button" onClick={() => setButtonsVis(!buttonsVis)} className="mt-16 mb-8">
+                        <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 20H20.5M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6" stroke="#E0E3EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button> : null
+                }
             </header>
-            {buttonsVis ?
+            {buttonsVis && authenticated ?
                 <div className="flex justify-center gap-16 mt-8 mb-32">
                     <Link to={`/events/${event?._id}/edit`} className="secondary-btn">Edit</Link>
                     <button type="button" onClick={() => toggleArchival.mutate(event?._id)} className="secondary-btn">{event?.archived ? "Unarchive" : "Archive"}</button>
@@ -152,14 +157,17 @@ const ExpandedEvent: React.FC = function() {
                 <div className="flex flex-wrap gap-8 my-16">
                     {generateParticipants()}
                 </div>
-                <div className="flex justify-between gap-8">
-                    <label htmlFor="members" className="text-offwhite">Search</label>
-                    <input ref={participantSearchRef} type="text" name="members" id="members" onChange={handleMemberChange} className="input flex-grow" />
-                </div>
-                
-                <div className="flex flex-wrap gap-8 my-16">
-                    {generateMatchingMembers()}
-                </div>
+                {authenticated ?
+                    <>
+                        <div className="flex justify-between gap-8">
+                            <label htmlFor="members" className="text-offwhite">Search</label>
+                            <input ref={participantSearchRef} type="text" name="members" id="members" onChange={handleMemberChange} className="input flex-grow" />
+                        </div>
+                        <div className="flex flex-wrap gap-8 my-16">
+                            {generateMatchingMembers()}
+                        </div>
+                    </> : null
+                }
             </section>
         </>
     );
