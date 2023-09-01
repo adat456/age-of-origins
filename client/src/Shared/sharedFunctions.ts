@@ -237,6 +237,7 @@ export async function toggleEventArchival(eventid: string) {
     };
 };
 
+
 export async function editEvent(data: {eventid: string, title?: string, body?: string, range?: boolean, eventdates?: string[], participation?: string[]}) {
     const reqOptions: RequestInit = {
         method: "PATCH",

@@ -140,6 +140,10 @@ const ReferenceForm: React.FC = function() {
                     <label htmlFor="body" className="block text-offwhite mb-4">Body</label>
                     <ReactQuill value={body} onChange={setBody} placeholder="Start typing here..." />
                 </div>
+                <div className="my-16">
+                    <label htmlFor="image" className="block text-offwhite mb-4">Attach images:</label>
+                    <input type="file" id="image" name="image" accept=".png, .jpg, .jpeg, .heif" multiple />
+                </div>
                 <fieldset className="my-24">
                     {generateAddedTags()}
                     <label htmlFor="tag" className="text-offwhite block mb-4 mt-16">Find/Add Tags</label>

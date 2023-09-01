@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AuthenticatedContext from "./Shared/AuthenticatedContext";
@@ -25,6 +25,27 @@ const queryClient = new QueryClient();
 
 function App() {
   const [ authenticated, setAuthenticated ] = useState(false);
+
+  useEffect(() => {
+    async function verifyAuthentication() {
+      try {
+        const req = await fetch("http://localhost:3001/verify-authentication", { credentials: "include" });
+        const res = await req.json();
+
+        if (req.ok) {
+          console.log(res);
+          setAuthenticated(true);
+        } else {
+          throw new Error(res);
+        };
+      } catch(err) {
+        console.log(err.message);
+        setAuthenticated(false);
+      };
+    };
+
+    verifyAuthentication();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

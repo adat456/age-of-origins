@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const AWS = require("aws-sdk");
 const jwt = require("jsonwebtoken");
 const { getYear, getWeek, parseISO, eachDayOfInterval } = require("date-fns");
 const mongoose = require("mongoose");
@@ -9,6 +10,19 @@ const AnnouncementModel = require("../models/announcementSchema");
 const ReferenceModel = require("../models/referenceSchema");
 const EventModel = require("../models/eventSchema");
 
+// setting up AWS
+AWS.config.update({
+  region: process.env.BUCKET_REGION,
+  credentials: new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: process.env.IDENTITY_POOL_ID
+  })
+});
+
+const s3 = new AWS.S3({
+  apiVersion: "2006-03-01",
+  params: { Bucket: process.env.BUCKET_NAME }
+});
+
 // still need server-side validation... beyond mongodbs?
 
 async function authenticate(req, res, next) {
@@ -17,7 +31,7 @@ async function authenticate(req, res, next) {
   try {
     if (token) {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-      if (decodedToken === process.env.ADMIN_USERNAME) {
+      if (decodedToken.username === process.env.ADMIN_USERNAME) {
         next();
       } else {
         throw new Error("Token payload does not match.");
@@ -52,6 +66,26 @@ router.post("/log-in", async function(req, res, next) {
   };  
 });
 
+router.get("/verify-authentication", async function(req, res, next) {
+  const token = req.cookies.jwt;
+
+  try {
+    if (token) {
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+      if (decodedToken.username === process.env.ADMIN_USERNAME) {
+        res.status(200).json("Token still valid.");
+      } else {
+        throw new Error("Token payload does not match.");
+      };
+    } else {
+      throw new Error("No token found.");
+    };
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 router.get("/log-out", async function(req, res, next) {
   try {
     const token = await jwt.sign({ invalidated: process.env.ADMIN_INVALIDATED }, process.env.JWT_SECRET, { expiresIn: "86400s" });
@@ -61,6 +95,74 @@ router.get("/log-out", async function(req, res, next) {
     res.status(400).json(err.message);
   };
 });
+
+
+/// BUCKET
+function listAlbums() {
+  try {
+    s3.listObjects({ Delimiter: "/" }, function(err, data) {
+      if (err) throw new Error("Unable to list albums.");
+
+      const albums = data.CommonPrefixes.map(commonPrefix => {
+        const prefix = commonPrefix.Prefix;
+        const albumName = decodeURIComponent(prefix.replace("/", ""));
+        return albumName;
+      });
+
+      console.log(albums);
+    });
+  } catch(err) {
+    console.error(err.message);
+  };
+};
+
+function createAlbum(albumName) {
+  const albumKey = encodeURIComponent(albumName);
+  try {
+    s3.headObject({ Key: albumKey }, function(err, data) {
+      if (!err) throw new Error("Album already exists.");
+      if (err.code !== "NotFound") throw new Error(`There was an error creating the ${albumName} album.`);
+
+      s3.putObject({ Key: albumKey }, function(err, data) {
+        if (err) throw new Error(`There was an error creating the ${albumName} album.`);
+
+      });
+    });
+  } catch(err) {
+    console.error(err.message);
+  };
+};
+
+async function addPhoto(albumName, files) {
+  try {
+    if (files.length == 0) throw new Error("Please choose a file to upload.");
+
+    const fileName = files[0].name;
+    const albumKey = encodeURIComponent(albumName) + "/";
+    const photoKey = albumKey + fileName;
+
+    const upload = new AWS.S3.ManagedUpload({
+      params: {
+        Bucket: process.env.BUCKET_NAME,
+        Key: photoKey,
+        Body: files[0],
+      }
+    });
+
+    const promise = upload.promise();
+    promise.then(
+      function(data) {
+        console.log("Successfully uploaded photo.");
+      },
+      function(err) {
+        throw new Error("There was an error uploading your photo.");
+      }
+    );
+
+  } catch(err) {
+    console.error(err.message);
+  };
+};
 
 /// MEMBERS ///
 router.get("/fetch-members", async function(req, res, next) {
