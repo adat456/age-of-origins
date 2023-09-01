@@ -12,6 +12,7 @@ const ReferenceForm: React.FC = function() {
     const [ tag, setTag ] = useState("");
     const [ tagResults, setTagResults ] = useState<string[]>([]);
     const [ tags, setTags ] = useState<string[]>([]);
+    const [ files, setFiles ] = useState<FileList | null>(null);
 
     const tagSearchRef = useRef<HTMLInputElement>(null);
 
@@ -38,7 +39,7 @@ const ReferenceForm: React.FC = function() {
         };
     }, [allReferences.data, referenceid])
     const addReferenceMutation = useMutation({
-        mutationFn: () => addReference({ author: "64d69b49a8599d958bc51e57", title, body, tags }),
+        mutationFn: (data: FormData) => addReference(data),
         onSuccess: (data) => {
             queryClient.invalidateQueries("references");
             queryClient.invalidateQueries("tags");
@@ -121,7 +122,16 @@ const ReferenceForm: React.FC = function() {
         e.preventDefault();
 
         if (!referenceid && !addReferenceMutation.isLoading) {
-            addReferenceMutation.mutate();
+            const formData = new FormData();
+            formData.append("author", "64d69b49a8599d958bc51e57");
+            formData.append("title", title);
+            formData.append("body", body);
+            formData.append("tags", tags);
+            for (let i = 0; i < files?.length; i++) {
+                formData.append("images", files[i]);
+            };
+
+            addReferenceMutation.mutate(formData);
         } else if (referenceid && !editReferenceMutation.isLoading) {
             editReferenceMutation.mutate();
         };
@@ -138,11 +148,11 @@ const ReferenceForm: React.FC = function() {
                 </div>
                 <div className="my-8">
                     <label htmlFor="body" className="block text-offwhite mb-4">Body</label>
-                    <ReactQuill value={body} onChange={setBody} placeholder="Start typing here..." />
+                    <ReactQuill value={body} id="body" name="body" onChange={setBody} placeholder="Start typing here..." />
                 </div>
                 <div className="my-16">
-                    <label htmlFor="image" className="block text-offwhite mb-4">Attach images:</label>
-                    <input type="file" id="image" name="image" accept=".png, .jpg, .jpeg, .heif" multiple />
+                    <label htmlFor="images" className="block text-offwhite mb-4">Attach images:</label>
+                    <input type="file" id="images" name="images" accept=".png, .jpg, .jpeg, .heif" multiple onChange={(e) => setFiles(e.target.files)} />
                 </div>
                 <fieldset className="my-24">
                     {generateAddedTags()}
@@ -159,7 +169,6 @@ const ReferenceForm: React.FC = function() {
                     }
                     <button type="submit" className="primary-btn">{!referenceid ? "Post" : "Save edits"}</button>
                 </div>
-                
             </form>
         </>
     );

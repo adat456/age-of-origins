@@ -164,12 +164,19 @@ export async function fetchAllReferences() {
     };
 };
 
-export async function addReference(data: {author: string, title: string, body: string, tags: string[]}) {
+// FormData type comes in the box
+export async function addReference(data: FormData) {
+    // simpley console logging the formData will yield an empty object; in order to print its values, must iterate through the object
+    for(let [name, value] of data) {
+        console.log(`${name} = ${value}`); // key1 = value1, then key2 = value2
+    };
     const reqOptions: RequestInit = {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include"
+        // should not include headers, even though the logrocket guide instructs that it is necessary (one of the comments suggests removing this)
+        // headers: { "Content-Type": "multipart/form-data" },
+        credentials: "include",
+        // formData should NOT be JSON stringified
+        body: data
     };
     const req = await fetch(`http://localhost:3001/add-reference`, reqOptions);
     if (req.ok) {

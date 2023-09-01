@@ -20,8 +20,6 @@ async function main() {
   console.log("Connected to MongoDB.");
 };
 
-
-
 app.use(cors({ credentials: true, origin: true }));
 app.use(logger('dev'));
 app.use(express.json());

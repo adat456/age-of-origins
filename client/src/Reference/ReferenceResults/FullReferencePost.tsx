@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllReferences, deleteReference } from "../../Shared/sharedFunctions";
@@ -11,6 +11,7 @@ const FullReferencePost: React.FC = function() {
     const [ buttonsVis, setButtonsVis ] = useState(false);
 
     const { referenceid } = useParams();
+    const navigate = useNavigate();
 
     const authenticated = useContext(AuthenticatedContext);
 
@@ -21,7 +22,10 @@ const FullReferencePost: React.FC = function() {
     });
     const deleteReferenceMutation = useMutation({
         mutationFn: () => deleteReference(currentReference?._id),
-        onSuccess: () => queryClient.invalidateQueries("references")
+        onSuccess: () => {
+            queryClient.invalidateQueries("references");
+            navigate("/reference");
+        }
     });
 
     useEffect(() => {

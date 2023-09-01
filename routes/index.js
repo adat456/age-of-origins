@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const AWS = require("aws-sdk");
+const multer = require("multer");
+const fs = require("fs");
 const jwt = require("jsonwebtoken");
 const { getYear, getWeek, parseISO, eachDayOfInterval } = require("date-fns");
 const mongoose = require("mongoose");
@@ -12,7 +14,9 @@ const EventModel = require("../models/eventSchema");
 
 // setting up AWS
 AWS.config.update({
-  region: process.env.BUCKET_REGION,
+  // this does not work, even though process.env.BUCKET_REGION === "us-east-2"
+  // region: process.env.BUCKET_REGION,
+  region: "us-east-2",
   credentials: new AWS.CognitoIdentityCredentials({
     IdentityPoolId: process.env.IDENTITY_POOL_ID
   })
@@ -98,7 +102,7 @@ router.get("/log-out", async function(req, res, next) {
 
 
 /// BUCKET
-function listAlbums() {
+router.get("/list-albums", async function(req, res, next) {
   try {
     s3.listObjects({ Delimiter: "/" }, function(err, data) {
       if (err) throw new Error("Unable to list albums.");
@@ -109,60 +113,40 @@ function listAlbums() {
         return albumName;
       });
 
-      console.log(albums);
+      res.status(200).json(albums);
     });
   } catch(err) {
     console.error(err.message);
+    res.status(400).json(err.message);
   };
-};
+});
 
-function createAlbum(albumName) {
-  const albumKey = encodeURIComponent(albumName);
+router.get("/view-album/:albumName", async function(req, res, next) {
+  const { albumName } = req.params;
+  const albumPath = encodeURIComponent(albumName.trim()) + "/";
+
   try {
-    s3.headObject({ Key: albumKey }, function(err, data) {
-      if (!err) throw new Error("Album already exists.");
-      if (err.code !== "NotFound") throw new Error(`There was an error creating the ${albumName} album.`);
+    s3.listObjects({ Prefix: albumPath }, function(err, data) {
+      if (err) throw new Error("Unable to view album " + albumPath);
 
-      s3.putObject({ Key: albumKey }, function(err, data) {
-        if (err) throw new Error(`There was an error creating the ${albumName} album.`);
+      console.log(this);
+      const href = this.request.httpRequest.endpoint.href;
+      const bucketPath = href + process.env.BUCKET_NAME + "/";
 
+      const photos = data.Contents.map(photo => {
+        const photoKey = photo.Key;
+        const photoPath = bucketPath + encodeURIComponent(photoKey);
+        return photoPath;
       });
-    });
+
+      console.log(photos);
+      res.status(200).json(photos);
+    })
   } catch(err) {
     console.error(err.message);
+    res.status(400).json(err.message);
   };
-};
-
-async function addPhoto(albumName, files) {
-  try {
-    if (files.length == 0) throw new Error("Please choose a file to upload.");
-
-    const fileName = files[0].name;
-    const albumKey = encodeURIComponent(albumName) + "/";
-    const photoKey = albumKey + fileName;
-
-    const upload = new AWS.S3.ManagedUpload({
-      params: {
-        Bucket: process.env.BUCKET_NAME,
-        Key: photoKey,
-        Body: files[0],
-      }
-    });
-
-    const promise = upload.promise();
-    promise.then(
-      function(data) {
-        console.log("Successfully uploaded photo.");
-      },
-      function(err) {
-        throw new Error("There was an error uploading your photo.");
-      }
-    );
-
-  } catch(err) {
-    console.error(err.message);
-  };
-};
+});
 
 /// MEMBERS ///
 router.get("/fetch-members", async function(req, res, next) {
@@ -495,15 +479,50 @@ router.get("/fetch-existing-tags", async function(req, res, next) {
   };
 });
 
-router.post("/add-reference", authenticate, async function(req, res, next) {
+router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
   const { author, title, body, tags } = req.body;
-
+  console.log("files:", req.files);
+  
   try {
+    // create the reference in mongoose
     const newReference = await ReferenceModel.create({
       author, title, body, tags,
       postdate: new Date(),
       editdate: undefined,
     });
+
+    // create the album using the reference's object ID, which is an alphanumeric string
+    const albumName = newReference._id.toString();
+    s3.headObject({ Key: albumName }, function(err, data) {
+      if (!err) throw new Error("Album already exists.");
+      if (err.code !== "NotFound") throw new Error(`There was an error creating the ${albumName} album.`);
+
+      s3.putObject({ Key: albumName }, function(err, data) {
+        if (err) throw new Error(`There was an error creating the ${albumName} album.`);
+      });
+    });
+
+    // if there are one or more files attached, add them to the newly created album
+    if (req.files.length > 0) {
+      req.files.forEach(file => {
+        fs.readFile(`../image_uploads/${file.filename}`, function(err, data) {
+          if (err) throw err;
+
+          params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: albumName + "/" + file.originalname,
+            Body: data,
+          };
+
+          s3.putObject(params, function(err, data) {
+            if (err) throw err;
+            console.log("Successfully uploaded photo.");
+          });
+        });
+      });
+    };
+
+    // send successful response
     res.status(200).json(newReference._id);
   } catch(err) {
     console.error(err.message);
