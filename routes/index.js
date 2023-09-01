@@ -100,54 +100,6 @@ router.get("/log-out", async function(req, res, next) {
   };
 });
 
-
-/// BUCKET
-router.get("/list-albums", async function(req, res, next) {
-  try {
-    s3.listObjects({ Delimiter: "/" }, function(err, data) {
-      if (err) throw new Error("Unable to list albums.");
-
-      const albums = data.CommonPrefixes.map(commonPrefix => {
-        const prefix = commonPrefix.Prefix;
-        const albumName = decodeURIComponent(prefix.replace("/", ""));
-        return albumName;
-      });
-
-      res.status(200).json(albums);
-    });
-  } catch(err) {
-    console.error(err.message);
-    res.status(400).json(err.message);
-  };
-});
-
-router.get("/view-album/:albumName", async function(req, res, next) {
-  const { albumName } = req.params;
-  const albumPath = encodeURIComponent(albumName.trim()) + "/";
-
-  try {
-    s3.listObjects({ Prefix: albumPath }, function(err, data) {
-      if (err) throw new Error("Unable to view album " + albumPath);
-
-      console.log(this);
-      const href = this.request.httpRequest.endpoint.href;
-      const bucketPath = href + process.env.BUCKET_NAME + "/";
-
-      const photos = data.Contents.map(photo => {
-        const photoKey = photo.Key;
-        const photoPath = bucketPath + encodeURIComponent(photoKey);
-        return photoPath;
-      });
-
-      console.log(photos);
-      res.status(200).json(photos);
-    })
-  } catch(err) {
-    console.error(err.message);
-    res.status(400).json(err.message);
-  };
-});
-
 /// MEMBERS ///
 router.get("/fetch-members", async function(req, res, next) {
   try {
@@ -473,6 +425,31 @@ router.get("/fetch-existing-tags", async function(req, res, next) {
     const tagSetArr = [...tagSet];
     tagSetArr.sort();
     res.status(200).json(tagSetArr);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.get("/fetch-reference-images/:referenceid", async function(req, res, next) {
+  const { referenceid } = req.params;
+  const albumPath = referenceid + "/";
+
+  try {
+    s3.listObjects({ Prefix: albumPath }, function(err, data) {
+      if (err) throw new Error("Unable to view album " + albumPath);
+
+      const href = this.request.httpRequest.endpoint.href;
+      const bucketPath = href + process.env.BUCKET_NAME + "/";
+
+      const photos = data.Contents.map(photo => {
+        const photoKey = photo.Key;
+        const photoPath = bucketPath + encodeURIComponent(photoKey);
+        return photoPath;
+      });
+
+      res.status(200).json(photos);
+    });
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

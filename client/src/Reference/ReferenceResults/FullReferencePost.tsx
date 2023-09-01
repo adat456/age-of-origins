@@ -2,12 +2,13 @@ import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchAllReferences, deleteReference } from "../../Shared/sharedFunctions";
+import { fetchAllReferences, fetchReferenceImages, deleteReference } from "../../Shared/sharedFunctions";
 import { referenceInterface } from "../../Shared/interfaces";
 import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 
 const FullReferencePost: React.FC = function() {
     const [ currentReference, setCurrentReference ] = useState<referenceInterface | undefined>(undefined);
+    const [ images, setImages ] = useState<string[]>("");
     const [ buttonsVis, setButtonsVis ] = useState(false);
 
     const { referenceid } = useParams();
@@ -20,6 +21,18 @@ const FullReferencePost: React.FC = function() {
         queryKey: [ "references" ],
         queryFn: fetchAllReferences
     });
+    useEffect(() => {
+        if (allReferences.data && referenceid) {
+            setCurrentReference(allReferences.data.find(reference => reference._id === referenceid));
+        };
+    }, [allReferences.data]);
+    const referenceImages = useQuery({
+        queryKey: [ `reference-${referenceid}-images` ],
+        queryFn: () => fetchReferenceImages(referenceid)
+    });
+    useEffect(() => {
+        if (referenceImages.data) setImages(referenceImages.data);
+    }, [referenceImages.data]);
     const deleteReferenceMutation = useMutation({
         mutationFn: () => deleteReference(currentReference?._id),
         onSuccess: () => {
@@ -27,12 +40,6 @@ const FullReferencePost: React.FC = function() {
             navigate("/reference");
         }
     });
-
-    useEffect(() => {
-        if (allReferences.data && referenceid) {
-            setCurrentReference(allReferences.data.find(reference => reference._id === referenceid));
-        };
-    }, [allReferences.data]);
 
     function generateTagLinks() {
         const tagLinks = currentReference?.tags.map(tag => (
@@ -44,6 +51,11 @@ const FullReferencePost: React.FC = function() {
                 {tagLinks}
             </div>
         );
+    };
+
+    function generateImages() {
+        const imagesArr = images?.map(image => <img key={image} src={image} />);
+        return imagesArr;
     };
 
     return (
@@ -65,6 +77,7 @@ const FullReferencePost: React.FC = function() {
             }
             {generateTagLinks()}
             <div className="text-offwhite my-24" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentReference?.body, { USE_PROFILES: { html: true }}) }} />
+            {generateImages()}
         </article>
     );
 };

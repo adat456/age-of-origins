@@ -1,4 +1,4 @@
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, events
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, reference-REFERENCEID-images, events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -164,7 +164,19 @@ export async function fetchAllReferences() {
     };
 };
 
-// FormData type comes in the box
+export async function fetchReferenceImages(referenceid: string) {
+    try {
+        const req = await fetch(`http://localhost:3001/fetch-reference-images/${referenceid}`);
+        if (req.ok) {
+            return req.json();
+        } else {
+            throw new Error(await req.json())
+        };
+    } catch(err) {
+        console.error(err.message);
+    };
+};
+
 export async function addReference(data: FormData) {
     // simpley console logging the formData will yield an empty object; in order to print its values, must iterate through the object
     for(let [name, value] of data) {
