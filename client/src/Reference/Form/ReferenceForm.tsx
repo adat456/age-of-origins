@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { fetchExistingTags, fetchAllReferences, addReference, editReference, deleteReference } from "../Shared/sharedFunctions";
+import { fetchAllReferences, fetchReferenceImages, addReference, editReference, deleteReference } from "../../Shared/sharedFunctions";
+import ReferenceTags from "./ReferenceTags";
+import ExistingFormImage from "./ExistingFormImage";
 
 const ReferenceForm: React.FC = function() {
     const [ title, setTitle ] = useState("");
@@ -12,18 +14,13 @@ const ReferenceForm: React.FC = function() {
     const [ tag, setTag ] = useState("");
     const [ tagResults, setTagResults ] = useState<string[]>([]);
     const [ tags, setTags ] = useState<string[]>([]);
+    const [ existingImages, setExistingImages ] = useState<string[]>([]);
     const [ files, setFiles ] = useState<FileList | null>(null);
-
-    const tagSearchRef = useRef<HTMLInputElement>(null);
 
     const { referenceid } = useParams();
     const navigate = useNavigate();
 
     const queryClient = useQueryClient();
-    const existingTags = useQuery({
-        queryKey: [ "tags" ],
-        queryFn: fetchExistingTags
-    });
     const allReferences = useQuery({
         queryKey: [ "references" ],
         queryFn: fetchAllReferences
@@ -37,7 +34,15 @@ const ReferenceForm: React.FC = function() {
                 setTags(matchingReference.tags);
             };
         };
-    }, [allReferences.data, referenceid])
+    }, [allReferences.data, referenceid]);
+    const referenceImages = useQuery({
+        queryKey: [ `reference-${referenceid}-images` ],
+        queryFn: () => fetchReferenceImages(referenceid),
+        enabled: !!referenceid
+    });
+    useEffect(() => {
+        if (referenceImages.data) setExistingImages(referenceImages.data);
+    }, [referenceImages.data]);
     const addReferenceMutation = useMutation({
         mutationFn: (data: FormData) => addReference(data),
         onSuccess: (data) => {
@@ -47,7 +52,7 @@ const ReferenceForm: React.FC = function() {
         },
     });
     const editReferenceMutation = useMutation({
-        mutationFn: () => editReference({ referenceid, title, body, tags }),
+        mutationFn: (data: FormData) => editReference(data),
         onSuccess: () => {
             queryClient.invalidateQueries("references");
             queryClient.invalidateQueries("tags");
@@ -63,59 +68,23 @@ const ReferenceForm: React.FC = function() {
         },
     });
 
-    function generateAddedTags() {
-        const addedTags = tags.map(tag => (
-            <button key={tag} onClick={() => removeTag(tag)} className="primary-btn flex items-center gap-8">
-                <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12L18 12" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <p>{tag}</p>
-            </button>
-        ));
-        return (
-            <div className="flex flex-wrap items-center my-4 gap-8">
-                <svg width="1.5rem" height="1.5rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M2.678 11.422a2.5 2.5 0 0 0 0 3.536l6.364 6.364a2.5 2.5 0 0 0 3.536 0l7.69-7.69A2.5 2.5 0 0 0 21 11.864V4.5A1.5 1.5 0 0 0 19.5 3h-7.365a2.5 2.5 0 0 0-1.768.732l-7.69 7.69zM14.988 7C13.878 7 13 7.832 13 8.988c0 1.157.878 2.012 1.988 2.012C16.121 11 17 10.145 17 8.988 17 7.832 16.12 7 14.988 7z" fill="#E0E3EB"/></svg>
-                {addedTags}
-            </div>
-        );
+    function generateExistingImages() {
+        const imagesArr = existingImages?.map(image => <ExistingFormImage key={image} src={image} referenceid={referenceid} />);
+        return imagesArr;
     };
-    function handleTagChange(e: React.ChangeEvent<HTMLInputElement>) {
-        setTag(e.target.value);
 
-        const cleanedValue = e.target.value.trim().toLowerCase();
-        if (existingTags && cleanedValue) {
-            setTagResults(existingTags.data.filter(tag => tag.includes(cleanedValue)));
-        } else {
-            setTagResults([]);
+    function generateAddedFileNames() {
+        let fileNames = [];
+        if (files && files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+                fileNames.push(<li key={files[i].name} className="text-offwhite">{files[i].name}</li>);
+            };
         };
-    };
-    function generateTagResults() {
-        const tagResultsButtons = tagResults.map(tag => (
-            <button key={tag} onClick={() => addTag(tag)} className="primary-btn flex items-center gap-8">
-                <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M12 4V20" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <p>{tag}</p>
-            </button>
-        ));
         return (
-            <div className="flex flex-wrap gap-8 my-8">
-                {tagResultsButtons}
-            </div>
+            <ul>
+                {fileNames}
+            </ul>
         );
-    };
-    function addTag(tag: string) {
-        setTags([...tags, tag]); 
-        setTagResults(tagResults.filter(existingTag => existingTag !== tag));
-    };
-    function removeTag(tag: string) {
-        setTags(tags.filter(addedTag => addedTag !== tag));
-        if (tagSearchRef.current?.value.trim() !== "") setTagResults([...tagResults, tag])
-    };
-    function handleCreateTagClick() {
-        const cleanedTag = tag.trim().toLowerCase();
-        if (!existingTags.data.includes(cleanedTag)) {
-            setTags([...tags, tag.trim().toLowerCase()]);
-            setTag("");
-        } else {
-
-        };
     };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -133,7 +102,16 @@ const ReferenceForm: React.FC = function() {
 
             addReferenceMutation.mutate(formData);
         } else if (referenceid && !editReferenceMutation.isLoading) {
-            editReferenceMutation.mutate();
+            const formData = new FormData();
+            formData.append("referenceid", referenceid);
+            formData.append("title", title);
+            formData.append("body", body);
+            formData.append("tags", tags);
+            for (let i = 0; i < files?.length; i++) {
+                formData.append("images", files[i]);
+            };
+
+            editReferenceMutation.mutate(formData);
         };
     };
 
@@ -151,18 +129,17 @@ const ReferenceForm: React.FC = function() {
                     <ReactQuill value={body} id="body" name="body" onChange={setBody} placeholder="Start typing here..." />
                 </div>
                 <div className="my-16">
+                    <p className="text-offwhite">Images:</p>
+                    {generateExistingImages()}
+                </div>
+                <div className="my-16">
                     <label htmlFor="images" className="block text-offwhite mb-4">Attach images:</label>
                     <input type="file" id="images" name="images" accept=".png, .jpg, .jpeg, .heif" multiple onChange={(e) => setFiles(e.target.files)} />
+                    <ul>
+                        {generateAddedFileNames()}
+                    </ul>
                 </div>
-                <fieldset className="my-24">
-                    {generateAddedTags()}
-                    <label htmlFor="tag" className="text-offwhite block mb-4 mt-16">Find/Add Tags</label>
-                    <div className="flex gap-8 items-center">
-                        <input type="text" ref={tagSearchRef} id="tag" value={tag} onChange={handleTagChange} className="input flex-grow" />
-                        <button type="button" onClick={handleCreateTagClick} className="primary-btn">Create tag</button>
-                    </div>
-                    {generateTagResults()}
-                </fieldset>
+                <ReferenceTags tag={tag} setTag={setTag} setTags={setTags} tags={tags} tagResults={tagResults} setTagResults={setTagResults} />
                 <div className="flex flex-col mt-24 gap-16">
                     {referenceid ?
                         <button type="button" onClick={() => deleteReferenceMutation.mutate()} className="secondary-btn">Delete</button> : null

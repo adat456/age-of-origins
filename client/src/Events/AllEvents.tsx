@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchAllEvents } from "../Shared/sharedFunctions";
@@ -10,8 +10,6 @@ import AuthenticatedContext from "../Shared/AuthenticatedContext";
 const AllEvents: React.FC = function() {
     const [ eventsVis, setEventsVis ] = useState<"upcoming" | "previous" | "archived">("upcoming");
     const [ timeFilter, setTimeFilter ] = useState("");
-
-    const [ photoPath, setPhotoPath ] = useState("");
 
     const authenticated = useContext(AuthenticatedContext);
 
@@ -99,45 +97,6 @@ const AllEvents: React.FC = function() {
             return "py-8 px-16 rounded-t hover:bg-dark focus:bg-dark text-offwhite font-bold"
         };
     };
-
-    useEffect(() => {
-        // async function getAlbumList() {
-        //   try {
-        //     const req = await fetch("http://localhost:3001/list-albums");
-        //     const res = await req.json();
-    
-        //     if (req.ok) {
-        //       console.log(res);
-        //     } else {
-        //       throw new Error(res);
-        //     };
-        //   } catch(err) {
-        //     console.error(err.message);
-        //   };
-        // };
-    
-        // getAlbumList();
-    
-        async function getPhotos() {
-          try {
-            const req = await fetch("http://localhost:3001/view-album/album1");
-            const res = await req.json();
-    
-            if (req.ok) {
-              console.log(res);
-              setPhotoPath(res[1]);
-            } else {
-              throw new Error(res);
-            };
-          } catch(err) {
-            console.error(err.message);
-          };
-        };
-    
-        getPhotos();
-    
-        
-      }, [])
 
     return (
         <>  

@@ -456,9 +456,27 @@ router.get("/fetch-reference-images/:referenceid", async function(req, res, next
   };
 });
 
+router.delete("/delete-reference-image/:referenceid/:imagekey", authenticate, async function(req, res, next) {
+  const { referenceid, imagekey } = req.params;
+
+  try {
+    const params = {
+      Bucket: process.env.BUCKET_NAME,
+      Key: referenceid + "/" + imagekey
+    };
+
+    s3.deleteObject(params, function(err, data) {
+      if (err) throw new Error(err);
+      res.status(200).json("Image successfully removed.");
+    });
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
   const { author, title, body, tags } = req.body;
-  console.log("files:", req.files);
   
   try {
     // create the reference in mongoose
@@ -507,18 +525,40 @@ router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }
   };
 });
 
-router.patch("/edit-reference", authenticate, async function(req, res, next) {
+router.patch("/edit-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
   const { referenceid, title, body, tags } = req.body;
+  console.log("files:", req.files);
 
   try {
+    // update all of the text content in mongoose
     const existingReference = await ReferenceModel.findOne({ _id: referenceid });
-
     if (title) existingReference.title = title;
     if (body) existingReference.body = body;
     if (tags) existingReference.tags = tags;
 
     existingReference.editdate = new Date();
     existingReference.save();
+
+    // add any new photos (photo deletion takes place through a different route)
+    if (req.files.length > 0) {
+      req.files.forEach(file => {
+        fs.readFile(`../image_uploads/${file.filename}`, function(err, data) {
+          if (err) throw err;
+
+          params = {
+            Bucket: process.env.BUCKET_NAME,
+            Key: referenceid + "/" + file.originalname,
+            Body: data,
+          };
+
+          s3.putObject(params, function(err, data) {
+            if (err) throw err;
+            console.log("Successfully uploaded photo.");
+          });
+        });
+      });
+    };
+
     res.status(200).json("Saved edits to reference post.");
   } catch(err) {
     console.error(err.message);

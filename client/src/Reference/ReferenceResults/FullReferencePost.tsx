@@ -8,7 +8,7 @@ import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 
 const FullReferencePost: React.FC = function() {
     const [ currentReference, setCurrentReference ] = useState<referenceInterface | undefined>(undefined);
-    const [ images, setImages ] = useState<string[]>("");
+    const [ images, setImages ] = useState<string[]>([]);
     const [ buttonsVis, setButtonsVis ] = useState(false);
 
     const { referenceid } = useParams();

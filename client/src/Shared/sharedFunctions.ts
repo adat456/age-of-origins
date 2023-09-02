@@ -165,29 +165,27 @@ export async function fetchAllReferences() {
 };
 
 export async function fetchReferenceImages(referenceid: string) {
-    try {
-        const req = await fetch(`http://localhost:3001/fetch-reference-images/${referenceid}`);
-        if (req.ok) {
-            return req.json();
-        } else {
-            throw new Error(await req.json())
-        };
-    } catch(err) {
-        console.error(err.message);
+    const req = await fetch(`http://localhost:3001/fetch-reference-images/${referenceid}`);
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function deleteReferenceImage(data: {referenceid: string, imagekey: string}) {
+    const req = await fetch(`http://localhost:3001/delete-reference-image/${data.referenceid}/${data.imagekey}`, { credentials: "include", method: "DELETE" });
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
     };
 };
 
 export async function addReference(data: FormData) {
-    // simpley console logging the formData will yield an empty object; in order to print its values, must iterate through the object
-    for(let [name, value] of data) {
-        console.log(`${name} = ${value}`); // key1 = value1, then key2 = value2
-    };
     const reqOptions: RequestInit = {
         method: "POST",
-        // should not include headers, even though the logrocket guide instructs that it is necessary (one of the comments suggests removing this)
-        // headers: { "Content-Type": "multipart/form-data" },
         credentials: "include",
-        // formData should NOT be JSON stringified
         body: data
     };
     const req = await fetch(`http://localhost:3001/add-reference`, reqOptions);
@@ -198,12 +196,11 @@ export async function addReference(data: FormData) {
     };
 };
 
-export async function editReference(data: {referenceid: string, title: string, body: string, tags: string[]}) {
+export async function editReference(data: FormData) {
     const reqOptions: RequestInit = {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include"
+        credentials: "include",
+        body: data
     };
     const req = await fetch(`http://localhost:3001/edit-reference`, reqOptions);
     if (req.ok) {
