@@ -79,7 +79,7 @@ const MembersList: React.FC = function() {
             setCurrentPage(location.state.pageNum); 
             setSeeArchived(location.state.seeArchived);
         };
-    }, [location.state])
+    }, [location.state]);
 
     useEffect(() => {
         if (memberFormVis) {

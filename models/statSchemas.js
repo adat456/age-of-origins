@@ -24,18 +24,6 @@ const BattleSchema = new Schema({
     }
 }, { toJSON: { virtuals: true} });
 
-// BattleSchema.virtual("previousgoal").get(function() {
-//     let returnValue = "No previous goal found.";
-//     return BattleModel.findOne({  
-//         week: this.week == 1 ? 52 : this.week - 1,
-//         year:  this.week == 1 ? this.year - 1 : this.year,
-//         member: this.member
-//     }).then((lastWeeksBattleScore) => {
-//         if (lastWeeksBattleScore) returnValue = lastWeeksBattleScore.score;
-//     }).catch(err => console.log(err))
-//     .finally(() => returnValue);
-// });
-
 BattleSchema.virtual("nextgoal").get(function() {
     return Math.round(this.score * 1.03);
 });

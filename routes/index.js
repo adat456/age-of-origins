@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
 const AnnouncementModel = require("../models/announcementSchema");
-const ReferenceModel = require("../models/referenceSchema");
+const { ReferenceModel, CategoryModel } = require("../models/referenceSchema");
 const EventModel = require("../models/eventSchema");
 
 // setting up AWS

@@ -34,8 +34,8 @@ const ReferenceSchema = new Schema({
         required: true
     }
 });
-
-module.exports = mongoose.model("Reference", ReferenceSchema);
+const ReferenceModel = mongoose.model("Reference", ReferenceSchema);
+exports.ReferenceModel = ReferenceModel;
 
 const CategorySchema = new Schema({
     name: {
@@ -43,5 +43,5 @@ const CategorySchema = new Schema({
         required: true
     },
 });
-
-module.exports = mongoose.model("Category", CategorySchema);
+const CategoryModel = mongoose.model("Category", CategorySchema);
+exports.CategoryModel = CategoryModel;
