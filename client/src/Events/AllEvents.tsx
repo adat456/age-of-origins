@@ -128,7 +128,6 @@ const AllEvents: React.FC = function() {
                 }
                 {generateEventsList()}
             </div>
-            <img src={photoPath} alt="" />
         </>
     );
 };

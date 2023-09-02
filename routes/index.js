@@ -123,6 +123,55 @@ router.post("/create-member", authenticate, async function(req, res, next) {
   };
 });
 
+router.patch("/edit-member/:memberid", authenticate, async function(req, res, next) {
+  const { memberid } = req.params;
+  const { username, firstname } = req.body;
+
+  try {
+    const matchingMember = await MemberModel.findOne({ _id: memberid });
+    if (username) matchingMember.username = username;
+    if (firstname) matchingMember.firstname = firstname;
+    matchingMember.save();
+
+    res.status(200).json(`Member edited.`);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/toggle-member-archival/:memberid", authenticate, async function(req, res, next) {
+  const { memberid } = req.params;
+
+  try {
+    const matchingMember = await MemberModel.findOne({ _id: memberid });
+    if (matchingMember.archived) {
+      matchingMember.archived = false;
+    } else {
+      matchingMember.archived = true;
+      matchingMember.archivedate = new Date();
+    };
+    matchingMember.save();
+
+    res.status(200).json(`Member archival status toggled.`);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.delete("/delete-member/:memberid", authenticate, async function(req, res, next) {
+  const { memberid } = req.params;
+
+  try {
+    await MemberModel.deleteOne({ _id: memberid });
+    res.status(200).json(`Member deleted.`);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
 /// STATS ///
 router.get("/fetch-all-members-stats/:stat/:year/:week", async function(req, res, next) {
   const { stat, year, week } = req.params;

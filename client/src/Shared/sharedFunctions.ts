@@ -10,11 +10,11 @@ export async function fetchMembers() {
     };
 };
 
-export async function createMember(memberData: { username: string, firstname: string }) {
+export async function createMember(data: { username: string, firstname: string }) {
     const reqOptions: RequestInit = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(memberData),
+        body: JSON.stringify(data),
         credentials: "include"
     };
     const req = await fetch("http://localhost:3001/create-member", reqOptions);
@@ -29,6 +29,40 @@ export async function createMember(memberData: { username: string, firstname: st
     };
 
     return req.json();
+};
+
+export async function editMember(data: { memberid: string, username: string, firstname: string }) {
+    const reqOptions: RequestInit = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: data.username, firstname: data.firstname }),
+        credentials: "include"
+    };
+    const req = await fetch(`http://localhost:3001/edit-member/${data.memberid}`, reqOptions);
+    
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function toggleMemberArchival(memberid: string) {
+    const req = await fetch(`http://localhost:3001/toggle-member-archival/${memberid}`, { credentials: "include", method: "PATCH" });
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function deleteMember(memberid: string) {
+    const req = await fetch(`http://localhost:3001/delete-member/${memberid}`, { credentials: "include", method: "DELETE" });
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
 };
 
 /// STATS ///

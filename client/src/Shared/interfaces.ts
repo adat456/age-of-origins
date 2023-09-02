@@ -2,6 +2,8 @@ export interface memberInterface {
     _id: string,
     username: string,
     firstname?: string,
+    archived: boolean,
+    archivedate: string,
     battle: string[],
     contribution: string[],
 };

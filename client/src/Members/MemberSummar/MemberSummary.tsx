@@ -10,7 +10,7 @@ const MemberSummary: React.FC = function() {
 
     const { memberid } = useParams();
     const location = useLocation();
-    const { pageNum } = location.state;
+    const { pageNum, seeArchived } = location.state;
 
     const membersData = useQuery({
         queryKey: [ "members" ],
@@ -26,7 +26,7 @@ const MemberSummary: React.FC = function() {
     return (
         <>
             <section>
-                <Link to="/members" state={{ pageNum }} className="link">Back to members</Link>
+                <Link to="/members" state={{ pageNum, seeArchived }} className="link">Back to members</Link>
                 <h2 className="text-offwhite mt-24 mb-16 text-2xl font-bold tracking-wide text-center">{`${member?.username}`}</h2>
                 <Graph stat="battleRankings" />
                 <Graph stat="contributions" />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchMembers, createMember } from "../Shared/sharedFunctions";
+import { fetchMembers, createMember, editMember, deleteMember } from "../Shared/sharedFunctions";
 
 interface memberFormInterface {
     setMemberFormVis?: React.Dispatch<React.SetStateAction<boolean>>

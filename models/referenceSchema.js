@@ -24,6 +24,10 @@ const ReferenceSchema = new Schema({
         type: String,
         required: true
     },
+    category: {
+        type: String,
+        required: true,
+    },
     tags: {
         type: [String],
         trim: true,
@@ -32,3 +36,12 @@ const ReferenceSchema = new Schema({
 });
 
 module.exports = mongoose.model("Reference", ReferenceSchema);
+
+const CategorySchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+});
+
+module.exports = mongoose.model("Category", CategorySchema);

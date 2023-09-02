@@ -12,6 +12,13 @@ const MemberSchema = new Schema({
         type: String,
         trim: true,
     },
+    archived: {
+        type: Boolean,
+        default: false,
+    },
+    archivedate: {
+        type: String,
+    },
     battle: [{ type: mongoose.Types.ObjectId, ref: "Battle"}],
     contributions: [{ type: mongoose.Types.ObjectId, ref: "Contribution" }],
 });

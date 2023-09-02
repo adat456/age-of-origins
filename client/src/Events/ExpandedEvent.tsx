@@ -80,13 +80,32 @@ const ExpandedEvent: React.FC = function() {
                 };
                 return 0;
             }).
-            map(participant => (
-                <button key={participant._id} onClick={() => removeParticipant(participant._id)} className="primary-btn flex items-center gap-8">
-                    <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12L18 12" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    <p>{participant?.username}</p>
-                </button>
-            ));
-        return participants;
+            map(participant => {
+                if (authenticated) {
+                    return (
+                        <button key={participant._id} onClick={() => removeParticipant(participant._id)} className="primary-btn flex items-center gap-8">
+                            <svg width="1rem" height="1rem" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 12L18 12" stroke="#E0E3EB" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                            <p>{participant.username}</p>
+                        </button>
+                    );
+                } else {
+                    return <li key={participant._id} className="text-offwhite list-none">{participant.username}</li>
+                };
+            });
+
+        if (authenticated) {
+            return (
+                <div className="flex flex-wrap gap-8 my-16">
+                    {participants}
+                </div>
+            );
+        } else {
+            return (
+                <ul className="grid grid-cols-2 gap-4 my-8">
+                    {participants}
+                </ul>
+            );
+        };
     };
 
     function handleMemberChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -154,9 +173,7 @@ const ExpandedEvent: React.FC = function() {
             <div className="text-offwhite mt-16" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event?.body, { USE_PROFILES: { html: true }}) }} />
             <section className="my-24">
                 <h3 className="text-offwhite my-16 text-xl font-bold text-center tracking-wide">Participants</h3>
-                <div className="flex flex-wrap gap-8 my-16">
-                    {generateParticipants()}
-                </div>
+                {generateParticipants()}
                 {authenticated ?
                     <>
                         <div className="flex justify-between gap-8">
