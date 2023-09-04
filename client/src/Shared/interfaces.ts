@@ -26,6 +26,11 @@ export interface announcementInterface {
     pinned: boolean,
 };
 
+export interface categoryInterface {
+    _id: string,
+    name: string
+};
+
 export interface referenceInterface {
     _id: string,
     title: string,

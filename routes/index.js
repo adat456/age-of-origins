@@ -51,7 +51,7 @@ async function authenticate(req, res, next) {
 
 router.post("/log-in", async function(req, res, next) {
   let { username, password } = req.body;
-  username = username.toLowerCase().trim();
+  username = username.trim();
 
   try {
     if (username === process.env.ADMIN_USERNAME) {
@@ -77,7 +77,8 @@ router.get("/verify-authentication", async function(req, res, next) {
     if (token) {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
       if (decodedToken.username === process.env.ADMIN_USERNAME) {
-        res.status(200).json("Token still valid.");
+        const matchingUser = await MemberModel.findOne({ username: decodedToken.username });
+        res.status(200).json({ id: matchingUser._id, username: matchingUser.username });
       } else {
         throw new Error("Token payload does not match.");
       };
@@ -437,6 +438,56 @@ router.delete("/delete-announcement/:announcementid", authenticate, async functi
   try {
     await AnnouncementModel.deleteOne({ _id: announcementid });
     res.status(200).json("Announcement deleted.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+/// CATEGORY ///
+router.get("/fetch-categories", async function(req, res, next) {
+  try {
+    const categories = await CategoryModel.find().sort();
+    res.status(200).json(categories);
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.post("/add-category", authenticate, async function(req, res, next) {
+  const { name } = req.body;
+
+  try {
+    await CategoryModel.create({ name });
+    res.status(200).json("Category created.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.patch("/edit-category/:categoryid", authenticate, async function(req, res, next) {
+  const { name } = req.body;
+  const { categoryid } = req.params;
+
+  try {
+    const matchingCategory = await CategoryModel.findOne({ _id: categoryid });
+    matchingCategory.name = name;
+    matchingCategory.save();
+    res.status(200).json("Category edited.");
+  } catch(err) {
+    console.error(err.message);
+    res.status(400).json(err.message);
+  };
+});
+
+router.delete("/delete-category/:categoryid", authenticate, async function(req, res, next) {
+  const { categoryid } = req.params;
+
+  try {
+    await CategoryModel.deleteOne({ _id: categoryid });
+    res.status(200).json("Category deleted.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);

@@ -4,7 +4,7 @@ import { useState } from "react";
 import AuthenticatedContext from "./AuthenticatedContext";
 
 interface navBarInterface {
-    setAuthenticated: React.Dispatch<React.SetStateAction<boolean>>
+    setAuthenticated: React.Dispatch<React.SetStateAction<{id: string, username: string} | null>>
 };
 
 const NavBar: React.FC<navBarInterface> = function({ setAuthenticated }) {
@@ -21,7 +21,7 @@ const NavBar: React.FC<navBarInterface> = function({ setAuthenticated }) {
                 throw new Error(res);
             } else {
                 console.log(res);
-                setAuthenticated(false);
+                setAuthenticated(null);
             };
         } catch(err) {
             console.log(err.message);

@@ -24,7 +24,7 @@ import ScrollToTop from "./Shared/ScrollToTop";
 const queryClient = new QueryClient();
 
 function App() {
-  const [ authenticated, setAuthenticated ] = useState(false);
+  const [ authenticated, setAuthenticated ] = useState(null);
 
   useEffect(() => {
     async function verifyAuthentication() {
@@ -34,13 +34,13 @@ function App() {
 
         if (req.ok) {
           console.log(res);
-          setAuthenticated(true);
+          setAuthenticated(res);
         } else {
           throw new Error(res);
         };
       } catch(err) {
         console.log(err.message);
-        setAuthenticated(false);
+        setAuthenticated(null);
       };
     };
 

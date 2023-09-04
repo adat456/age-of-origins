@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllEvents, addEvent, editEvent, deleteEvent } from "../Shared/sharedFunctions";
+import AuthenticatedContext from "../Shared/AuthenticatedContext";
 import EventDatesFieldset from "./EventDatesFieldset";
 
 const EventForm: React.FC = function() {
@@ -21,8 +22,9 @@ const EventForm: React.FC = function() {
     const [ startDate, setStartDate ] = useState(new Date().toISOString().slice(0, 10));
     const [ endDate, setEndDate ] = useState(new Date().toISOString().slice(0, 10));
 
-    const { eventid } = useParams();
+    const authenticated = useContext(AuthenticatedContext);
 
+    const { eventid } = useParams();
     const navigate = useNavigate();
 
     const queryClient = useQueryClient();
@@ -32,7 +34,7 @@ const EventForm: React.FC = function() {
     });
     const addEventMutation = useMutation({
         mutationFn: () => addEvent({
-            author: "64d69b49a8599d958bc51e57",
+            author: authenticated?.id,
             title, body,
             range: daterange,
             eventdates: daterange ?

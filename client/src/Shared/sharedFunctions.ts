@@ -1,4 +1,4 @@
-// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, recent-references, references, reference-REFERENCEID-images, events
+// query keys: members, MEMBERID-stats, USERNAME-past-year-stats, all-members-battle, all-members-contribution, announcements, tags, categories, recent-references, references, reference-REFERENCEID-images, events
 
 /// MEMBERS ///
 export async function fetchMembers() {
@@ -163,6 +163,59 @@ export async function editAnnouncement(data: {announcementid: string, title?: st
 
 export async function deleteAnnouncement(announcementid: string) {
     const req = await fetch(`http://localhost:3001/delete-announcement/${announcementid}`, { method: "DELETE", credentials: "include" });
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+/// CATEGORIES ///
+export async function fetchCategories() {
+    const req = await fetch("http://localhost:3001/fetch-categories");
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function addCategory(name: string) {
+    const reqOptions: RequestInit = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name })
+    };
+    const req = await fetch("http://localhost:3001/add-category", reqOptions);
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function editCategory(data: { categoryid: string, name: string }) {
+    const reqOptions: RequestInit = {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: data.name })
+    };
+    const req = await fetch(`http://localhost:3001/edit-category/${data.categoryid}`, reqOptions);
+    if (req.ok) {
+        return req.json();
+    } else {
+        throw new Error(await req.json())
+    };
+};
+
+export async function deleteCategory(categoryid: string) {
+    const reqOptions: RequestInit = {
+        method: "DELETE",
+        credentials: "include",
+    };
+    const req = await fetch(`http://localhost:3001/delete-category/${categoryid}`, reqOptions);
     if (req.ok) {
         return req.json();
     } else {

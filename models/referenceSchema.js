@@ -24,10 +24,10 @@ const ReferenceSchema = new Schema({
         type: String,
         required: true
     },
-    category: {
-        type: String,
-        required: true,
-    },
+    // category: {
+    //     type: String,
+    //     required: true,
+    // },
     tags: {
         type: [String],
         trim: true,

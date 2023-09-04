@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { fetchAllReferences, fetchReferenceImages, addReference, editReference, deleteReference } from "../../Shared/sharedFunctions";
+import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 import ReferenceTags from "./ReferenceTags";
 import ExistingFormImage from "./ExistingFormImage";
 
@@ -16,6 +17,8 @@ const ReferenceForm: React.FC = function() {
     const [ tags, setTags ] = useState<string[]>([]);
     const [ existingImages, setExistingImages ] = useState<string[]>([]);
     const [ files, setFiles ] = useState<FileList | null>(null);
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const { referenceid } = useParams();
     const navigate = useNavigate();
@@ -92,7 +95,7 @@ const ReferenceForm: React.FC = function() {
 
         if (!referenceid && !addReferenceMutation.isLoading) {
             const formData = new FormData();
-            formData.append("author", "64d69b49a8599d958bc51e57");
+            formData.append("author", authenticated?.id);
             formData.append("title", title);
             formData.append("body", body);
             formData.append("tags", tags);

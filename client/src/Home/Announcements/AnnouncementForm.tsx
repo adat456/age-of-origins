@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { fetchAnnouncements, addAnnouncement, editAnnouncement, deleteAnnouncement } from "../../Shared/sharedFunctions";
+import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 
 interface announcementFormInterface {
     announcementid?: string,
@@ -14,6 +15,8 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
     const [ body, setBody ] = useState("");
     const [ bodyErr, setBodyErr ] = useState("");
     const [ pinned, setPinned ] = useState(false);
+
+    const authenticated = useContext(AuthenticatedContext);
 
     const queryClient = useQueryClient();
     const announcements = useQuery({
@@ -30,7 +33,7 @@ const AnnouncementForm: React.FC<announcementFormInterface> = function({ announc
     }, [announcements.data]);
 
     const addAnnouncementMutation = useMutation({
-            mutationFn: () => addAnnouncement({ author: "64eab06d7b23b17452484e6c", title, body, pinned }),
+            mutationFn: () => addAnnouncement({ author: authenticated?.id, title, body, pinned }),
             onSuccess: () => queryClient.invalidateQueries("announcements")
     });
     const editAnnouncementMutation = useMutation({

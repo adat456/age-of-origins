@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { fetchRecentReferences } from "../../Shared/sharedFunctions";
 import AuthenticatedContext from "../../Shared/AuthenticatedContext";
+import Categories from "../ReferenceNav/Categories";
 import TagNav from "../ReferenceNav/TagNav";
 
 const RecentReferences: React.FC = function() {
@@ -44,6 +45,7 @@ const RecentReferences: React.FC = function() {
                     </Link> : null
                 }
             </header>
+            <Categories />
             <TagNav />
             <h3 className="text-offwhite text-xl font-bold tracking-wide mt-24 text-center">Recent Posts</h3>
             {recentReferences.isLoading ? <p>Loading recently added reference posts...</p> : null}
