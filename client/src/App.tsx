@@ -12,6 +12,7 @@ import ReferenceHome from "./Reference/ReferenceHome";
 import ReferenceForm from "./Reference/Form/ReferenceForm";
 import FullReferencePost from "./Reference/ReferenceResults/FullReferencePost";
 import RecentReferences from "./Reference/ReferenceResults/RecentReferences";
+import CategoryReferences from "./Reference/ReferenceResults/CategoryReferences";
 import TaggedReferences from "./Reference/ReferenceResults/TaggedReferences";
 import EventsHome from "./Events/EventsHome";
 import EventForm from "./Events/EventForm";
@@ -66,6 +67,7 @@ function App() {
               </Route>
               <Route path="/reference" element={<ReferenceHome />}>
                 <Route index element={<RecentReferences />} />
+                <Route path=":category" element={<CategoryReferences />} />
                 <Route path="tag/:tag" element={<TaggedReferences />} />
                 <Route path="post/:referenceid/edit" element={<ReferenceForm />} />
                 <Route path="post/:referenceid" element={<FullReferencePost />} />

@@ -576,12 +576,12 @@ router.delete("/delete-reference-image/:referenceid/:imagekey", authenticate, as
 });
 
 router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
-  const { author, title, body, tags } = req.body;
+  const { author, title, body, category, tags } = req.body;
   
   try {
     // create the reference in mongoose
     const newReference = await ReferenceModel.create({
-      author, title, body, tags,
+      author, title, body, category, tags,
       postdate: new Date(),
       editdate: undefined,
     });
@@ -626,14 +626,14 @@ router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }
 });
 
 router.patch("/edit-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
-  const { referenceid, title, body, tags } = req.body;
-  console.log("files:", req.files);
+  const { referenceid, title, body, category, tags } = req.body;
 
   try {
     // update all of the text content in mongoose
     const existingReference = await ReferenceModel.findOne({ _id: referenceid });
     if (title) existingReference.title = title;
     if (body) existingReference.body = body;
+    if (category) existingReference.category = category;
     if (tags) existingReference.tags = tags;
 
     existingReference.editdate = new Date();

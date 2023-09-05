@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { fetchAllReferences, fetchReferenceImages, addReference, editReference, deleteReference } from "../../Shared/sharedFunctions";
+import { fetchAllReferences, fetchReferenceImages, fetchCategories, addReference, editReference, deleteReference } from "../../Shared/sharedFunctions";
 import AuthenticatedContext from "../../Shared/AuthenticatedContext";
 import ReferenceTags from "./ReferenceTags";
 import ExistingFormImage from "./ExistingFormImage";
@@ -12,6 +12,7 @@ const ReferenceForm: React.FC = function() {
     const [ title, setTitle ] = useState("");
     const [ titleErr, setTitleErr ] = useState("");
     const [ body, setBody ] = useState("");
+    const [ category, setCategory ] = useState("");
     const [ tag, setTag ] = useState("");
     const [ tagResults, setTagResults ] = useState<string[]>([]);
     const [ tags, setTags ] = useState<string[]>([]);
@@ -34,10 +35,15 @@ const ReferenceForm: React.FC = function() {
             if (matchingReference) {
                 setTitle(matchingReference.title);
                 setBody(matchingReference.body);
+                setCategory(matchingReference.category);
                 setTags(matchingReference.tags);
             };
         };
     }, [allReferences.data, referenceid]);
+    const categories = useQuery({
+        queryKey: [ "categories" ],
+        queryFn: fetchCategories
+    });
     const referenceImages = useQuery({
         queryKey: [ `reference-${referenceid}-images` ],
         queryFn: () => fetchReferenceImages(referenceid),
@@ -71,6 +77,20 @@ const ReferenceForm: React.FC = function() {
         },
     });
 
+    function generateCategoryOptions() {
+        const options = categories.data?.map(category => (
+            <option key={category._id} value={category._id}>{category.name}</option>
+        ));
+        return (
+            <div>
+                <label htmlFor="category"></label>
+                <select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    {options}
+                </select>
+            </div>
+        );
+    };
+
     function generateExistingImages() {
         const imagesArr = existingImages?.map(image => <ExistingFormImage key={image} src={image} referenceid={referenceid} />);
         return imagesArr;
@@ -98,6 +118,7 @@ const ReferenceForm: React.FC = function() {
             formData.append("author", authenticated?.id);
             formData.append("title", title);
             formData.append("body", body);
+            formData.append("category", category);
             formData.append("tags", tags);
             for (let i = 0; i < files?.length; i++) {
                 formData.append("images", files[i]);
@@ -109,6 +130,7 @@ const ReferenceForm: React.FC = function() {
             formData.append("referenceid", referenceid);
             formData.append("title", title);
             formData.append("body", body);
+            formData.append("category", category);
             formData.append("tags", tags);
             for (let i = 0; i < files?.length; i++) {
                 formData.append("images", files[i]);
@@ -142,6 +164,7 @@ const ReferenceForm: React.FC = function() {
                         {generateAddedFileNames()}
                     </ul>
                 </div>
+                {generateCategoryOptions()}
                 <ReferenceTags tag={tag} setTag={setTag} setTags={setTags} tags={tags} tagResults={tagResults} setTagResults={setTagResults} />
                 <div className="flex flex-col mt-24 gap-16">
                     {referenceid ?

@@ -39,7 +39,7 @@ const Categories: React.FC = function() {
         let links;
         if (!editingMode) {
             links = categories.data?.map(category => (
-                <Link key={category._id} to={`/reference/${encodeURIComponent(category.name)}`}>{category.name}</Link>
+                <Link key={category._id} to={`/reference/${encodeURIComponent(category.name)}`} className="text-offwhite">{category.name}</Link>
             ));
         } else {
             links = categories.data?.map(category => (

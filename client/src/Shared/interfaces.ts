@@ -38,7 +38,7 @@ export interface referenceInterface {
     editdate: string,
     author: string,
     body: string,
-    pinned: string,
+    category: string,
     tags: string[],
 };
 
