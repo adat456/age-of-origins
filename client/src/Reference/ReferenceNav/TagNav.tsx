@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { SetURLSearchParams } from "react-router-dom";
 import { fetchExistingTags } from "../../Shared/sharedFunctions";
 
-const TagNav: React.FC = function() {
+interface tagNavInterface {
+    searchParams: URLSearchParams,
+    setSearchParams: SetURLSearchParams
+};
+
+const TagNav: React.FC<tagNavInterface> = function({ searchParams, setSearchParams }) {
     const [ expandedTags, setExpandedTags ] = useState(false);
     const [ letterFilter, setLetterFilter ] = useState<string | "All" | "Untagged" >("");
 
@@ -19,7 +24,8 @@ const TagNav: React.FC = function() {
             const uppercaseLetter = (String.fromCharCode(i));
             tagHierarchy[uppercaseLetter] = []
         };
-        existingTags.data.forEach(tag => {
+        console.log(existingTags.data);
+        existingTags.data?.forEach(tag => {
             const firstLetter = tag.toUpperCase().slice(0, 1);
             tagHierarchy[firstLetter] = [...tagHierarchy[firstLetter], tag];
         });
@@ -34,8 +40,7 @@ const TagNav: React.FC = function() {
             return (
                 <div className="flex flex-wrap gap-8 my-16">
                     {tagLetters.map(letter => <button key={letter} type="button" onClick={() => setLetterFilter(letter)} className="secondary-btn py-4 px-8">{letter}</button>)}
-                    {/* <button type="button" onClick={() => setLetterFilter("All")} className="secondary-btn py-4 px-8">All</button>
-                    <button type="button" onClick={() => setLetterFilter("Untagged")} className="secondary-btn py-4 px-8">Untagged</button> */}
+                    <button type="button" onClick={() => setSearchParams(searchParams.delete("tag"))} className="secondary-btn py-4 px-8">All</button>
                 </div>
             );
         } else {
@@ -46,7 +51,7 @@ const TagNav: React.FC = function() {
     function generateTagLinks() {
         const filteredTags = existingTags.data?.filter(tag => tag.slice(0, 1).toUpperCase() === letterFilter);
         const tagLinks = filteredTags?.map(tag => (
-            <Link key={tag} to={`/reference/tag/${encodeURIComponent(tag)}`} className="link block py-4 px-8">{tag}</Link>
+            <button key={tag} onClick={() => setSearchParams({ tag })} className="link block py-4 px-8">{tag}</button>
         ));
         return (
             <div className="flex flex-wrap gap-8 mt-16 mb-8">

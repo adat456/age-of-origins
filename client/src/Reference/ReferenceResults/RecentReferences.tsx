@@ -46,7 +46,6 @@ const RecentReferences: React.FC = function() {
                 }
             </header>
             <Categories />
-            <TagNav />
             <h3 className="text-offwhite text-xl font-bold tracking-wide mt-24 text-center">Recent Posts</h3>
             {recentReferences.isLoading ? <p>Loading recently added reference posts...</p> : null}
             {recentReferences.isError ? <p>{recentReferences.error}</p> : null}

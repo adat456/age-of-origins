@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useContext, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories, fetchAllReferences } from "../../Shared/sharedFunctions";
@@ -15,6 +15,7 @@ const CategoryReferences: React.FC = function() {
     const authenticated = useContext(AuthenticatedContext);
 
     const { category } = useParams();
+    const [ searchParams, setSearchParams ] = useSearchParams();
 
     const references = useQuery({
         queryKey: [ "references" ],
@@ -28,11 +29,17 @@ const CategoryReferences: React.FC = function() {
         if (category && references.data && categories.data) {
             const matchingCategory = categories.data.find(categoryData => categoryData.name === decodeURIComponent(category));
             const categoryId = matchingCategory._id;
-            console.log(categoryId);
-            const filteredReferences = references.data.filter(data => data.category === categoryId);
+
+            let filteredReferences = references.data.filter(data => data.category === categoryId);
+
+            const currentTag = searchParams.get("tag");
+            if (currentTag) {
+                filteredReferences = filteredReferences.filter(reference => reference.tags.includes(currentTag))
+            };
+
             setCategoryReferences(filteredReferences);
         };
-    }, [category, references.data, categories.data]);
+    }, [category, references.data, categories.data, searchParams]);
 
     function generateReferences(referencesArr: referenceInterface[]) {
         const references = referencesArr?.map(ref => {
@@ -63,7 +70,7 @@ const CategoryReferences: React.FC = function() {
                 }
             </header>
             <Categories />
-            <TagNav />
+            <TagNav searchParams={searchParams} setSearchParams={setSearchParams} />
             {categories.isLoading || references.isLoading ? 
                 <p>Loading references in this category...</p> : null
             }

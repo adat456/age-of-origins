@@ -68,7 +68,6 @@ function App() {
               <Route path="/reference" element={<ReferenceHome />}>
                 <Route index element={<RecentReferences />} />
                 <Route path=":category" element={<CategoryReferences />} />
-                <Route path="tag/:tag" element={<TaggedReferences />} />
                 <Route path="post/:referenceid/edit" element={<ReferenceForm />} />
                 <Route path="post/:referenceid" element={<FullReferencePost />} />
                 <Route path="create" element={<ReferenceForm />} />

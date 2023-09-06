@@ -60,7 +60,7 @@ const FullReferencePost: React.FC = function() {
 
     return (
         <article>
-            <Link to="/reference" className="link">Back to all reference posts</Link>
+            <Link onClick={(e) => { e.preventDefault(); navigate(-1); }} className="link">Back to all reference posts</Link>
             <header className="flex justify-center items-center my-8 gap-8">
                 <h2 className="text-offwhite mt-16 mb-8 text-2xl font-bold text-center tracking-wide">{currentReference?.title}</h2>
                 {authenticated ?
