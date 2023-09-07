@@ -6,6 +6,7 @@ import DOMPurify from "dompurify";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllEvents, addEvent, editEvent, deleteEvent } from "../Shared/sharedFunctions";
 import AuthenticatedContext from "../Shared/AuthenticatedContext";
+import ErrorMessage from "../Shared/ErrorMessage";
 import EventDatesFieldset from "./EventDatesFieldset";
 
 const EventForm: React.FC = function() {
@@ -91,7 +92,7 @@ const EventForm: React.FC = function() {
     function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setTitle(e.target.value);
         if (!e.target.value.trim()) {
-            setTitleErr("Title required without whitespaces."); 
+            setTitleErr("Title required without whitespace."); 
         } else {
             setTitleErr("");
         };
@@ -137,7 +138,7 @@ const EventForm: React.FC = function() {
                 <h2 className="text-offwhite text-center text-2xl font-bold tracking-wide mt-24">{eventid ? "Edit event" : "Add event"}</h2>
                 <div className="my-8">
                     <label htmlFor="title" className="block text-offwhite mb-4">Name</label>
-                    {titleErr ? <p>{titleErr}</p> : null}
+                    {titleErr ? <ErrorMessage msg={titleErr} /> : null}
                     <input type="text" name="title" id="title" value={title} onChange={handleTitleChange} className="input w-full" required />
                 </div>
                 <div className="my-8">

@@ -71,7 +71,7 @@ const AnnouncementsList: React.FC = function() {
 
     return (
         <>
-            <section className="mb-48">
+            <section className="mb-48 md:col-span-2 md:mb-[0px]">
                 <header className="flex my-16 justify-between">
                     <h2 className="text-offwhite text-2xl font-bold tracking-wide">Announcements</h2>
                     {authenticated ?

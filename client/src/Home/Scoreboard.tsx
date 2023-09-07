@@ -28,12 +28,16 @@ const Scoreboard: React.FC<scoreboardInterface> = function({ stat }) {
         queryFn: stat === "battle" ? () => fetchAllMembersBattle({year, week}) : () => fetchAllMembersContribution({year, week}),
     });
 
-    function getTopFiveScores() {
-        if (allMembersStats.data) return allMembersStats.data.slice(0, 5);
+    function getScoresPreview() {
+        if (allMembersStats.data && screen.height < 900) {
+            return allMembersStats.data.slice(0, 5);
+        } else {
+            return allMembersStats.data.slice(0, 10);
+        };
     };
 
     function generateScores() {
-        const scoreset = location.pathname === "/" ? getTopFiveScores() : allMembersStats.data;
+        const scoreset = location.pathname === "/" ? getScoresPreview() : allMembersStats.data;
         const scores = scoreset?.map((populatedStat, index: number) => (
             <li key={populatedStat._id} className="flex items-center border-b-2 border-light/25 py-8">
                 <div className="bg-light p-8 mr-16 rounded text-offwhite">{`${index + 1}`}</div>
@@ -44,7 +48,7 @@ const Scoreboard: React.FC<scoreboardInterface> = function({ stat }) {
         return (
             <ul>
                 {scores}
-                {location.pathname === "/" ? null : <p className="block text-offwhite text-center my-16">End of scoreboard</p>}
+                {location.pathname === "/" ? null : <p className="block text-offwhite text-center my-16 md:my-32">End of scoreboard</p>}
             </ul>
         );
     };
@@ -70,7 +74,7 @@ const Scoreboard: React.FC<scoreboardInterface> = function({ stat }) {
     };
 
     return (
-        <aside className={location.pathname === "/" ? "my-32" : "m-24"}>
+        <aside className={location.pathname === "/" ? "my-32 md:my-16" : "m-24"}>
             {location.pathname === "/" ? null : <Link to="/" className="link block mb-24">Back to dash</Link>}
             <header className="flex justify-between mb-16">
                 <button type="button" onClick={() => handleWeekChange("backward")} className="primary-btn">
