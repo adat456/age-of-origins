@@ -10,6 +10,7 @@ const MemberModel = require("../models/memberSchema");
 const { BattleModel, ContributionModel } = require("../models/statSchemas");
 const AnnouncementModel = require("../models/announcementSchema");
 const { ReferenceModel, CategoryModel } = require("../models/referenceSchema");
+const ImageDescriptionModel = require("../models/imageDescriptionSchema");
 const EventModel = require("../models/eventSchema");
 
 // setting up AWS
@@ -536,6 +537,7 @@ router.get("/fetch-reference-images/:referenceid", async function(req, res, next
   const albumPath = referenceid + "/";
 
   try {
+    let photosArr;
     s3.listObjects({ Prefix: albumPath }, function(err, data) {
       if (err) throw new Error("Unable to view album " + albumPath);
 
@@ -547,9 +549,12 @@ router.get("/fetch-reference-images/:referenceid", async function(req, res, next
         const photoPath = bucketPath + encodeURIComponent(photoKey);
         return photoPath;
       });
-
-      res.status(200).json(photos);
+      photosArr = photos;
     });
+
+    const imageDescriptions = await ImageDescriptionModel.find({ reference: referenceid });
+    
+    res.status(200).json({ photos: photosArr, imageDescriptions });
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -565,10 +570,15 @@ router.delete("/delete-reference-image/:referenceid/:imagekey", authenticate, as
       Key: referenceid + "/" + imagekey
     };
 
+    // delete the object
     s3.deleteObject(params, function(err, data) {
       if (err) throw new Error(err);
-      res.status(200).json("Image successfully removed.");
     });
+
+    // and delete its corresponding description
+    await ImageDescriptionModel.deleteOne({ reference: referenceid });
+
+    res.status(200).json("Image successfully removed.");
   } catch(err) {
     console.error(err.message);
     res.status(400).json(err.message);
@@ -576,7 +586,7 @@ router.delete("/delete-reference-image/:referenceid/:imagekey", authenticate, as
 });
 
 router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
-  const { author, title, body, category, tags } = req.body;
+  const { author, title, body, category, tags, descriptions } = req.body;
   
   try {
     // create the reference in mongoose
@@ -617,6 +627,17 @@ router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }
       });
     };
 
+    // if there are any descriptions, create them
+    if (descriptions.length > 0) {
+      descriptions.forEach(async desc => {
+        await ImageDescriptionModel.create({ 
+          reference: newReference._id.toString(),
+          image: desc.image, 
+          description: desc.description
+        });
+      })
+    };
+
     // send successful response
     res.status(200).json(newReference._id);
   } catch(err) {
@@ -626,7 +647,7 @@ router.post("/add-reference", authenticate, multer({ dest: "../image_uploads/" }
 });
 
 router.patch("/edit-reference", authenticate, multer({ dest: "../image_uploads/" }).array("images"), async function(req, res, next) {
-  const { referenceid, title, body, category, tags } = req.body;
+  const { referenceid, title, body, category, tags, descriptions } = req.body;
 
   try {
     // update all of the text content in mongoose
@@ -655,6 +676,18 @@ router.patch("/edit-reference", authenticate, multer({ dest: "../image_uploads/"
             if (err) throw err;
             console.log("Successfully uploaded photo.");
           });
+        });
+      });
+    };
+
+    // iterate through descriptions and replace each existing one with the new one (in case it was updated or added)
+    if (descriptions.length > 0) {
+      descriptions.forEach(async desc => {
+        await ImageDescriptionModel.deleteOne({ reference: referenceid })
+        await ImageDescriptionModel.create({ 
+          reference: referenceid,
+          image: desc.image, 
+          description: desc.description
         });
       });
     };
